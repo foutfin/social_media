@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= yield(:title) %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+  <nav class="navbar bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand">Flow</a>
+      <form class="mx-auto d-flex" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+      </form>
+      <% if @current_user %> 
+        <div class="flex gap-2" >
+          <a href="/post/new" class="btn btn-success"> + Create a Post  </a>
+          <div class='flex items-center gap-2'>
+            <span> <%= @current_user.username %> </span>
+            <a class='btn btn-primary ' href='/logout'>Logout </a>
+          </div>
+        </div>
+      <%end%>
+    </div>
+  </nav>
+    <%= yield %>
+  </body>
+</html>

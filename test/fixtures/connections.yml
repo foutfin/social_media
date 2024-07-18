@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  follow_by: one
+  follow_to: one
+
+two:
+  follow_by: two
+  follow_to: two

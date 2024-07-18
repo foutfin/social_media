@@ -1,0 +1,13 @@
+<% provide(:title, "flow") %>
+<div class='mt-[50px] w-[40%] mx-auto flex flex-column gap-[20px] '>
+    <% @posts.each do |post| %>
+        <div class='shadow-md rounded-md p-3'>
+            <h4><%= post.caption %></h4>
+            <p><%= post.body %></p>
+            <div class="flex gap-1">
+                <button class='btn btn-danger'>Delete</button>
+            </div>
+        </div>
+    <%end%>
+
+</div>

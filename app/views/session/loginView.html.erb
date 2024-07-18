@@ -1,0 +1,17 @@
+<% provide(:title, "Log in") %>
+<div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
+  <%= form_with url: "/login", method: :post do |form| %>
+    <div class="mb-3">
+      <%= form.label :username, "Username" , class: "form-label" %>
+      <%= form.text_field :username , class: "form-control " , required:true %>
+    </div>
+    <div class="mb-3">
+      <%= form.label :password, "Password" , class: "form-label" %>
+      <%= form.password_field :password , class: "form-control" , require:true %>
+    </div>
+    <%= form.submit "Log In" , class: "btn btn-primary" %>
+  <% end %>
+
+</div>
+
+
