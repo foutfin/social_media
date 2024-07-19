@@ -1,11 +1,19 @@
 <% provide(:title, "flow") %>
-<div class='mt-[50px] w-[40%] mx-auto flex flex-column gap-[20px] '>
-    <% @posts.each do |post| %>
+<div class='my-[50px] w-[40%] mx-auto flex flex-column gap-[20px] '>
+
+  <% @posts.each do |post| %>
         <div class='shadow-md rounded-md p-3'>
-            <h4><%= post.caption %></h4>
+            <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
             <p><%= post.body %></p>
-            <div class="flex gap-1">
-                <button class='btn btn-danger'>Delete</button>
+            <div class="flex justify-between ">
+                <div class=" flex gap-1">
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Like</a>
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Dislike</a>
+                </div>
+                <div class="flex gap-1">
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-danger'>Delete</a>
+                </div>
             </div>
         </div>
     <%end%>

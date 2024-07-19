@@ -6,4 +6,8 @@ module AuthHelper
             redirect_to '/signup'
         end
     end
+
+    def isLogIn
+      @current_user ||= User.find_by(id: session[:user_id])
+    end
 end

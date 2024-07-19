@@ -1,0 +1,13 @@
+<% provide(:title, @current_post.caption) %>
+<div class='mt-[40px] w-[40%] mx-auto '>
+  <h4><%= @current_post.caption  %></h4>
+  <div class='flex gap-1 items-center'>
+    <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+    <div class='flex flex-column gap-[2px] text-[14px]'>  
+      <span><%= @current_post.user.username  %></span>
+      <span><%= @current_post.created_at %></span>
+    </div>
+
+  </div>
+  <p class="mt-[50px]"> <%= @current_post.body %></p>
+</div>

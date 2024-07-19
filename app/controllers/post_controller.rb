@@ -24,12 +24,33 @@ class PostController < ApplicationController
   end
 
   def show
+    authenticate
+    @current_post = Post.find(params[:id])
+    if !@current_post.present? 
+      render template: 'post/post_not_found'
+    end
   end
 
   def edit
+    authenticate
+    @edit_post = Post.find(params[:id])
+    if !@edit_post.present?
+      render action: 'index'
+    end
   end
 
   def update
+    if @edit_post == nil 
+      @edit_post = Post.find(params[:id])
+    end
+    @edit_post.caption = params[:caption]
+    @edit_post.body = params[:body]
+
+    if @edit_post.save
+      redirect_to "/post/#{params[:id]}" 
+    else
+      render plain: @edit_post.errors.full_message
+    end
   end
 
   def destroy

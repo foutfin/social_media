@@ -1,0 +1,20 @@
+<% provide(:title, "Edit Post") %>
+<div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
+  <%= form_with url: "/post/#{@edit_post.id}", method: :put do |form| %>
+    <div class="mb-3">
+      <%= form.label :caption, "Caption" , class: "form-label" %>
+      <%= form.text_field :caption , class: "form-control " , required:true , value:@edit_post.caption %>
+    </div>
+    <div class="mb-3">
+      <%= form.label :body, "Body" , class: "form-label" %>
+      <%= form.text_area :body , class: "form-control" ,size: "70x4" , value:@edit_post.body %>
+    </div>
+    <div class="mb-3">
+      <label for="attachments" class="form-label">Upload file</label>
+      <input class="form-control" type="file" id="attachments" multiple>
+    </div>
+
+    <%= form.submit "Edit post" , class: "btn btn-primary" %>
+  <% end %>
+
+</div>
