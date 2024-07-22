@@ -1,4 +1,14 @@
 <% provide(:title, "User Page") %>
+
+<div class="mytoast toast align-items-center text-bg-primary border-0"  role="alert" aria-live="assertive" aria-atomic="true">
+  <div class="d-flex">
+    <div class="toast-body">
+      Hello, world! This is a toast message.
+    </div>
+    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
+</div>
+
 <div class='my-[50px] w-[40%] mx-auto '>
   <%# <button onclick="log()"> Run </button> %>
   <div class='flex gap-4 items-center'>
@@ -6,36 +16,76 @@
     <div>  
       <h4><%= @show_user.username  %></h4>
       <% if !@is_the_same_user %>
-        <% if @request_sent %>
-          <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-primary' >+ Follow</button>
+        <% if !@is_friend %>
+          <% if @request_sent_present %>
+          <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-disabled' >Request Already sent</button>
         <%else%>
           <button onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-primary' >+ Follow</button>
         <%end%>
+        <%end%>
       <%end%>
     </div>
-
   </div>
+
   <p> <%= @show_user.bio %></p>
   <div class='h-[2px] rounded-sm bg-black my-[20px] '></div>
   <div>
-    <% if @is_the_same_user %>
+    <% if @is_friend %>
+        <% @show_user_posts.each do |post| %>
+          <div class='shadow-md rounded-md p-3'>
+            <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
+            <p><%= post.body %></p>
+            <div class="flex justify-between ">
+                <div class=" flex gap-1">
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn'>
+                    <div class="flex items-center gap-1">
+                      <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                      <span><%= post.likes %> </span>
+                    </div>
+                  </a>
+                  <a href=<%= "/post/#{post.id}/edit"%> class='btn'>
+                    <div class="flex items-center gap-1">
+                      <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
+                      <span><%= post.likes %> </span>
+                    </div>
+                  </a>
+                </div>
+            </div>
+         </div>
+       <%end%>
+    <%end%>
+    </div>
+
+
+
+  <div>
+    <% if @is_the_same_user && !@is_friend %>
       <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="post-tab" data-bs-toggle="tab" data-bs-target="#posts-tab-panel" type="button" role="tab" aria-controls="posts-tab-pane" aria-selected="true">
+          <button class="nav-link active" id="post-tab" data-bs-toggle="tab" data-bs-target="#posts-tab-panel" type="button" role="tab" aria-controls="posts-tab-panel" aria-selected="true">
             All Posts
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived-tab-panel" type="button" role="tab" aria-controls="archived-tab-pane" aria-selected="false">
+          <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived-tab-panel" type="button" role="tab" aria-controls="archived-tab-panel" aria-selected="false">
             Archived
           </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="followrequest-tab" data-bs-toggle="tab" data-bs-target="#followrequest-tab-panel" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">
+          <button class="nav-link" id="followers-tab" data-bs-toggle="tab" data-bs-target="#followers-tab-panel" type="button" role="tab" aria-controls="followers-tab-panel" aria-selected="false">
+            Followers
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following-tab-panel" type="button" role="tab" aria-controls="following-tab-panel" aria-selected="false">
+            Following
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="followrequest-tab" data-bs-toggle="tab" data-bs-target="#followrequest-tab-panel" type="button" role="tab" aria-controls="contact-tab-panel" aria-selected="false">
             Follow requests
           </button>
         </li>
-  
       </ul>
       <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="posts-tab-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
@@ -51,23 +101,59 @@
                 </div>
                 <div class="flex gap-1">
                   <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-danger'>Delete</a>
+                  <button onclick=<%= "deletePost(event,'#{post.id}')"%> class='btn btn-danger'>Delete</button>
                 </div>
             </div>
          </div>
-        <%end%>
-
+       <%end%>
 
         </div>
-        <div class="tab-pane fade" id="archived-tab-pane" role="tabpanel" aria-labelledby="archived-tab" tabindex="0">other</div>
-        <div class="tab-pane fade" id="followrequest-tab-pane" role="tabpanel" aria-labelledby="followrequest-tab" tabindex="0">contact</div>
+        <div class="tab-pane fade" id="archived-tab-panel" role="tabpanel" aria-labelledby="archived-tab" tabindex="1">other</div>
+        <div class="tab-pane fade" id="followers-tab-panel" role="tabpanel" aria-labelledby="followers-tab" tabindex="2">
+            <% @all_followers.each do |user| %>
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+              <div class="flex gap-1 items-center">
+                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                  <h5><%= user.follow_by.username %></h5>
+              </div>
+            </div>
+          <%end%> 
+        </div>
+        <div class="tab-pane fade" id="following-tab-panel" role="tabpanel" aria-labelledby="following-tab" tabindex="3">
+            <% @all_following.each do |user| %>
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+              <div class="flex gap-1 items-center">
+                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                  <h5><%= user.follow_to.username %></h5>
+              </div>
+            </div>
+          <%end%> 
+        </div>
+        <div class="tab-pane fade" id="followrequest-tab-panel" role="tabpanel" aria-labelledby="followrequest-tab" tabindex="4">
+        <div class="flex flex-column gap-2">
+          <% @all_follow_requests.each do |request| %>
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+              <div class="flex gap-1 items-center">
+                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                  <h5><%= request.from.username %></h5>
+              </div>
+              <div class="flex gap-1">
+                <button onclick=<%= "acceptFollowRequest('#{request.id}')" %> class="btn btn-primary">Accept</button>
+                <button onclick=<%= "rejectFollowRequest('#{request.id}')" %> class="btn btn-secondary">Reject</button>
+              </div>
+            </div>
+          <%end%>
+
+        </div>
       </div>
       
-      <%end%>
+    <%end%>
+      </div>
   </div>
 </div>
 
 <script>
+
   async function followUser(to){
     console.log("called ")
     try{
@@ -86,4 +172,64 @@
 
     }
   }
+
+  async function acceptFollowRequest(reqid){
+    console.log("Accept request called ")
+    try{
+        const req = await fetch(`/follow/accept/${reqid}`);
+        if(req.status == 200 ){
+          const data =  req.json();
+          console.log(data , 'msg' in data && data.msg == "ok" );
+          if( 'msg' in data && data.msg == "ok" ){
+            alert("Accepted Request");
+            console.log("Accepted request")
+          }
+        }
+
+    }catch(err){
+      console.log(err);
+
+    }
+  }
+
+  async function rejectFollowRequest(reqid){
+    console.log("Reject Request called ")
+    try{
+        const req = await fetch(`/follow/reject/${reqid}`);
+        if(req.status == 200 ){
+          const data =  req.json();
+          console.log(data , 'msg' in data && data.msg == "ok" );
+          if( 'msg' in data && data.msg == "ok" ){
+            alert("Reject Request Called");
+            console.log("Reject Request Called")
+          }
+        }
+
+    }catch(err){
+      console.log(err);
+
+    }
+  }
+
+
+  async function deletePost(ev , postid){
+    console.log("Delete post called")
+
+    try{
+      const req = await fetch(`/post/${postid}/delete`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+            ev.target.parentNode.parentNode.parentNode.remove()
+      }
+
+
+    }catch(err){
+      console.log(err)
+    }
+  }
+
 </script>

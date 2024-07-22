@@ -3,6 +3,8 @@ Rails.application.routes.draw do
   resources :post
   get '/post/:id/like' , to: 'post#like'
   get '/post/:id/dislike' , to: 'post#dislike'
+  get '/post/:id/archive' , to: 'post#archive'
+  get 'post/:id/delete' , to: 'post#destroy'
 
   # Routes for Session Controller
   get '/login' , to: 'session#loginView'
@@ -19,8 +21,7 @@ Rails.application.routes.draw do
   put '/profile' , to: 'user#update'
   delete '/me' , to: 'user#destroy'
   get '/follow/:username' , to: 'user#follow'
-
-  
-  
-
+  get '/follow/accept/:reqid' , to: 'user#accept_follow'
+  get '/follow/reject/:reqid' , to: 'user#reject_follow'
+    
 end
