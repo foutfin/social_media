@@ -5,7 +5,8 @@ class User < ApplicationRecord
   validates :first_name , presence: true , length: {maximum: 50}
   validates :last_name , presence: true , length: {maximum: 50}
   validates :bio , length: {maximum: 255 }
-  validates :password , length:{ minimum: 6}
+  validates :password , length:{ minimum: 6} , on: :create
   has_many :posts
+  has_one_attached :avatar
   has_secure_password
 end

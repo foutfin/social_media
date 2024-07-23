@@ -1,4 +1,14 @@
 <% provide(:title, "Create Post") %>
+<div class="toast-container position-fixed">
+  <% if @post.errors.any? %>
+    <% @post.errors.full_messages.each do |message|%>
+      <div>
+        <h3> <%= message %> </h3>
+      </div>
+    <%end%>
+  <%end%>
+</div>
+
 <div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
   <%= form_with url: "/post", method: :post do |form| %>
     <div class="mb-3">
@@ -10,10 +20,9 @@
       <%= form.text_area :body , class: "form-control" ,size: "70x4" %>
     </div>
     <div class="mb-3">
-      <label for="attachments" class="form-label">Upload file</label>
-      <input class="form-control" type="file" id="attachments" multiple>
+      <%= form.label :media, "Upload Files" , class: "form-label" %>
+      <%= form.file_field :media , class: "form-control" , multiple: true , accept: "video/* , image/png , image/avif "  %>
     </div>
-
     <%= form.submit "Create post" , class: "btn btn-primary" %>
   <% end %>
 

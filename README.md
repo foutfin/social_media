@@ -7,10 +7,10 @@
 - [X] User page( visibility based on different role of User[Follower , Following , Self])
 - [X] Post Page
 - [X] Update , Delete , Like , Dislike and Archive Post
-- [ ] Resource Media Upload (Profile Pic , Images , video) Handling
-- [ ] Searching Users
+- [X] Resource Media Upload (Profile Pic , Images , video) Handling
+- [X] Searching Users
 - [ ] Home Feed
-- [ ] User Profile Update
+- [X] User Profile Update
 - [ ] Code Cleanup
 
 ### Database Schema

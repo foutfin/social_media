@@ -4,7 +4,7 @@ class PostController < ApplicationController
 
   def index
     authenticate
-    @posts = @current_user.posts.all
+    redirect_to "/user/#{@current_user.username}"
   end
 
   def new
@@ -16,11 +16,21 @@ class PostController < ApplicationController
     authenticate
     @post = @current_user.posts.new(caption:params[:caption],
                       body: params[:body])
+    if params[:media] != nil
+      pp "Runnign this"
+      ch = @post.media.attach(params[:media])
+      pp "Cheking return #{ch}"
+      if !@post.media.attached?
+        flash[:error] = ["Media not able to attach"]
+        render action: 'new'
+      end
+    end
+
     if @post.save
         redirect_to action: 'index'
     else
       flash[:error] = @post.errors.full_messages
-      render action: 'create'
+      render action: 'new'
     end
   end
 
@@ -30,6 +40,7 @@ class PostController < ApplicationController
     if !@current_post.present? 
       render template: 'post/post_not_found'
     end
+    pp "Media #{@current_post.media} length :- #{@current_post.media.length}"
     sameFollowing @current_post.user
   end
 
@@ -68,19 +79,25 @@ class PostController < ApplicationController
 
   def like
     authenticate
-    @current_post = post.find(params[:id])
+    @current_post = Post.find(params[:id])
     if !@current_post.present? 
       render template: 'post/post_not_found'
     end
-    samefollowing @current_post.user
-    if !@is_friend 
-      render json: { err: "not following"}
+    if @current_user.id != @current_post.user.id 
+      sameFollowing @current_post.user
+      if !@is_friend 
+        render json: { err: "not following"}
+        return
+      end
+      @current_post.likes += 1
     end
+
     @current_post.likes += 1
-    if !@current_post.save
-        render json: { err: @current_post.errors.full_message}
+    if @current_post.save
+      render json: {msg:"ok" , likes:@current_post.likes }
+    else
+      render json: { err: @current_post.errors.full_message}
     end
-    render json: {msg:"ok" , likes:@current_post.likes }
   end
 
   def dislike
@@ -89,15 +106,21 @@ class PostController < ApplicationController
     if !@current_post.present? 
       render template: 'post/post_not_found'
     end
-    sameFollowing @current_post.user
-    if !@is_friend 
-      render json: { err: "not following"}
+
+    if @current_user.id != @current_post.user.id 
+      sameFollowing @current_post.user
+      if !@is_friend 
+        render json: { err: "not following"}
+        return
+      end
     end
-    @current_post.dislikes -= 1
-    if !@current_post.save
-        render json: { err: @current_post.errors.full_message}
+
+    @current_post.dislikes += 1
+    if @current_post.save
+      render json: {msg:"ok" , dislikes:@current_post.dislikes }
+    else
+      render json: { err: @current_post.errors.full_message}
     end
-    render json: {msg:"ok" , likes:@current_post.likes }
   end
 
   def archive

@@ -41,6 +41,10 @@
       <%= form.label :bio, "Bio" , class: "form-label" %>
       <%= form.text_area :bio , class: "form-control" , size: "70x2" %>
     </div>
+    <div class="mb-3">
+      <%= form.label :avatar, "Avatar" , class: "form-label" %>
+      <%= form.file_field :avatar , class: "form-control" %>
+    </div>
     <%= form.submit "Create Account" , class: "btn btn-primary" %>
   <% end %>
   <p class='mt-1'> Already have an account <a href='/login' class=" text-blue-500 pointer  "> Log In </a> </p>

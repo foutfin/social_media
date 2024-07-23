@@ -17,11 +17,14 @@ Rails.application.routes.draw do
   get '/signup' , to: 'user#new'
   post '/signup' , to: 'user#create'
   get '/user/:username' , to: 'user#show'
-  get '/pofile' , to: 'user#edit'
+  get '/profile' , to: 'user#edit'
   put '/profile' , to: 'user#update'
   delete '/me' , to: 'user#destroy'
   get '/follow/:username' , to: 'user#follow'
   get '/follow/accept/:reqid' , to: 'user#accept_follow'
   get '/follow/reject/:reqid' , to: 'user#reject_follow'
+
+  # Routes for Search Controller
+  get '/search' , to: 'search#search'
     
 end

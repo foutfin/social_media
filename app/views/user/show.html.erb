@@ -1,5 +1,4 @@
 <% provide(:title, "User Page") %>
-
 <div class="mytoast toast align-items-center text-bg-primary border-0"  role="alert" aria-live="assertive" aria-atomic="true">
   <div class="d-flex">
     <div class="toast-body">
@@ -10,45 +9,53 @@
 </div>
 
 <div class='my-[50px] w-[40%] mx-auto '>
-  <%# <button onclick="log()"> Run </button> %>
   <div class='flex gap-4 items-center'>
-    <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[128px] rounded-full')%>
+    <% if @show_user.avatar.attached? %>
+      <%=image_tag(@show_user.avatar, alt: "profile picture" , class: ' w-[128px] rounded-full')%>
+    <%else%>
+      <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[128px] rounded-full')%>
+    <%end%>
     <div>  
       <h4><%= @show_user.username  %></h4>
-      <% if !@is_the_same_user %>
-        <% if !@is_friend %>
-          <% if @request_sent_present %>
-          <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-disabled' >Request Already sent</button>
+      <p> <%= @show_user.bio %></p>
+        <% if @is_the_same_user %>
+          <a href="/profile" class="btn btn-primary">Edit profile</a>
         <%else%>
-          <button onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-primary' >+ Follow</button>
+          <% if !@is_friend %>
+            <% if @request_sent_present %>
+              <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-disabled' >Request Already sent</button>
+            <%else%>
+              <button onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-primary' >+ Follow</button>
+            <%end%>
+          <%end%>
         <%end%>
-        <%end%>
-      <%end%>
     </div>
   </div>
 
-  <p> <%= @show_user.bio %></p>
   <div class='h-[2px] rounded-sm bg-black my-[20px] '></div>
   <div>
     <% if @is_friend %>
+        <% if @show_user_posts.length == 0 %>
+          <h4 class="mt-[80px] text-center">No Post</h4>
+        <%end%>
         <% @show_user_posts.each do |post| %>
           <div class='shadow-md rounded-md p-3'>
             <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
             <p><%= post.body %></p>
             <div class="flex justify-between ">
                 <div class=" flex gap-1">
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn'>
+                  <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
                     <div class="flex items-center gap-1">
                       <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
-                      <span><%= post.likes %> </span>
+                      <span class="like"><%= post.likes %> </span>
                     </div>
-                  </a>
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn'>
+                  </button>
+                  <button onclick=<%= "dislikePost(event,'#{post.id}')"%> class='btn'>
                     <div class="flex items-center gap-1">
                       <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
-                      <span><%= post.likes %> </span>
+                      <span class="dislike"><%= post.dislikes %> </span>
                     </div>
-                  </a>
+                  </button>
                 </div>
             </div>
          </div>
@@ -88,53 +95,88 @@
         </li>
       </ul>
       <div class="tab-content" id="myTabContent">
-        <div class="tab-pane fade show active" id="posts-tab-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-
+        <div class="tab-pane fade show active mt-[20px]" id="posts-tab-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+          <% if @posts.length == 0 %>
+            <h5 class=" mt-[60px] text-center"> No Posts , Create one</h5>
+          <%end%>
           <% @posts.each do |post| %>
-          <div class='shadow-md rounded-md p-3'>
-            <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
-            <p><%= post.body %></p>
-            <div class="flex justify-between ">
-                <div class=" flex gap-1">
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Like</a>
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Dislike</a>
-                </div>
-                <div class="flex gap-1">
-                  <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
-                  <button onclick=<%= "deletePost(event,'#{post.id}')"%> class='btn btn-danger'>Delete</button>
-                </div>
+            <div class='shadow-md rounded-md p-3'>
+              <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
+              <p><%= post.body %></p>
+              <div class="flex justify-between ">
+                  <div class=" flex gap-1">
+                    <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
+                      <div class="flex items-center gap-1">
+                        <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                        <span class="like"><%= post.likes %> </span>
+                      </div>
+                    </button>
+                    <button onclick=<%= "dislikePost(event,'#{post.id}')"%> class='btn'>
+                      <div class="flex items-center gap-1">
+                        <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
+                        <span class="dislike"><%= post.dislikes %> </span>
+                      </div>
+                    </button>
+                  </div>
+                  <div class="flex gap-1">
+                    <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
+                    <button onclick=<%= "deletePost(event,'#{post.id}')"%> class='btn btn-danger'>Delete</button>
+                  </div>
+              </div>
             </div>
-         </div>
-       <%end%>
+          <%end%>
 
         </div>
         <div class="tab-pane fade" id="archived-tab-panel" role="tabpanel" aria-labelledby="archived-tab" tabindex="1">other</div>
         <div class="tab-pane fade" id="followers-tab-panel" role="tabpanel" aria-labelledby="followers-tab" tabindex="2">
+            <% if @all_followers.length == 0 %>
+              <h5 class="mt-[80px] text-center"> Noone Follows You</h5>
+            <%end%>
+            
             <% @all_followers.each do |user| %>
             <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
               <div class="flex gap-1 items-center">
-                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
-                  <h5><%= user.follow_by.username %></h5>
+                  <% if user.follow_by.avatar.attached? %>
+                    <%=image_tag(user.follow_by.avatar, alt: "profile picture" , class: ' w-[48px] rounded-full')%>
+                  <%else%>
+                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[48px] rounded-full')%>
+                   <%end%>
+                  <a href=<%= "/user/#{user.follow_by.username}" %> ><h5><%= user.follow_by.username %></h5></a>
               </div>
             </div>
           <%end%> 
         </div>
         <div class="tab-pane fade" id="following-tab-panel" role="tabpanel" aria-labelledby="following-tab" tabindex="3">
+            <% if @all_following.length == 0 %>
+              <h5 class="mt-[80px] text-center"> You are not following anyone </h5>
+            <%end%>
+
             <% @all_following.each do |user| %>
             <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
               <div class="flex gap-1 items-center">
-                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
-                  <h5><%= user.follow_to.username %></h5>
+                  <% if user.follow_to.avatar.attached? %>
+                    <%=image_tag(user.follow_to.avatar, alt: "profile picture" , class: ' w-[48px] rounded-full')%>
+                  <%else%>
+                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[48px] rounded-full')%>
+                   <%end%>
+                  <a href=<%= "/user/#{user.follow_to.username}" %> ><h5><%= user.follow_to.username %></h5></a>
               </div>
             </div>
           <%end%> 
         </div>
         <div class="tab-pane fade" id="followrequest-tab-panel" role="tabpanel" aria-labelledby="followrequest-tab" tabindex="4">
-        <div class="flex flex-column gap-2">
+          <div class="flex flex-column gap-2">
+            <% if @all_follow_requests.length == 0 %>
+              <h5 class="mt-[80px] text-center"> No request pending </h5>
+            <%end%>
           <% @all_follow_requests.each do |request| %>
             <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
               <div class="flex gap-1 items-center">
-                  <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                  <% if requset.from.avatar.attached? %>
+                    <%=image_tag(requset.from.avatar, alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                  <%else%>
+                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[64px] rounded-full')%>
+                   <%end%>
                   <h5><%= request.from.username %></h5>
               </div>
               <div class="flex gap-1">
@@ -227,6 +269,42 @@
       }
 
 
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function likePost(ev , postid){
+    console.log("Like post called",ev.target.nextSibling ,ev)
+    try{
+      const req = await fetch(`/post/${postid}/like`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+          ev.target.parentNode.parentNode.disabled = true 
+          ev.target.nextElementSibling.textContent = data.likes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function dislikePost(ev , postid){
+    console.log("Dislike post called" , ev.target.nextSibling)
+    try{
+      const req = await fetch(`/post/${postid}/dislike`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        ev.target.parentNode.parentNode.disabled = true 
+        ev.target.nextElementSibling.textContent = data.dislikes
+      }
     }catch(err){
       console.log(err)
     }

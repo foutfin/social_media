@@ -1,0 +1,24 @@
+<% provide(:title, "Search") %>
+
+<div class='my-[50px] w-[40%] mx-auto '>
+  <% if @search_result == nil || @search_result.length == 0 %>
+    <h4 class="text-center">Nothing found</h4>
+  <%else%>
+    <div class="flex flex-column gap-2">
+    <% @search_result.each do |result| %>
+      <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+          <div class="flex gap-2 items-center">
+              <% if result.avatar.attached? %>
+                  <%=image_tag(result.avatar, class: ' w-[48px] rounded-full')%>
+              <%else%>
+                  <%=image_tag('default_pic.png' , class: ' w-[48px] rounded-full')%>
+              <%end%>
+              <a href=<%= "/user/#{result.username}" %> target="_blank" ><h5><%= result.username %></h5></a>
+          </div>
+
+        </div> 
+      <%end%>
+    </div>
+  <%end%>
+</div>
+

@@ -1,6 +1,6 @@
 <% provide(:title, @current_post.caption) %>
 <div class='mt-[40px] w-[40%] mx-auto '>
-  <% if @is_friend %>
+  <% if @is_friend || @current_user %>
     <h4><%= @current_post.caption  %></h4>
     <div class='flex gap-1 items-center'>
       <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>
@@ -10,6 +10,41 @@
       </div>
     </div>
     <p class="mt-[50px]"> <%= @current_post.body %></p>
+    <div id="media-carousel" class="carousel slide">
+      <div class="carousel-inner">
+        <% active=false %>
+        <% @current_post.media.each do |m| %>
+          <% if !active %>
+            <div class="carousel-item active">
+              <% if m.content_type == "video/mp4" %>
+                <video controls class="d-block w-100" src=<%= url_for(m) %> ></video>
+              <%else%>
+                <%=image_tag(m , class: "d-block w-100")%>
+              <%end%>
+            </div>
+            <% active=true %>
+          <%else%>
+            <div class="carousel-item">
+              <% if m.content_type == "video/mp4" %>
+                <video controls class="d-block w-100" src=<%= url_for(m) %> ></video>
+              <%else%>
+                <%=image_tag(m , class: "d-block w-100")%>
+              <%end%>
+            </div>
+          <%end%>
+          
+        <%end%>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#media-carousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#media-carousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+
   <%else%>
     <div class="text-center text-xl">
       <span>Follow <a href=<%= "/user/#{@current_post.user.username}" %> ><%= @current_post.user.username %></a> to see the post.</span>

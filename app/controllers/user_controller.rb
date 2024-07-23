@@ -19,6 +19,11 @@ class UserController < ApplicationController
                       password:params[:password],
                       password_confirmation: params[:confirm_password] 
                     )
+    @user.avatar.attach(params[:avatar])
+    if !@user.avatar.attached?
+      flash[:error] = [ "Avatar not able to upload"]
+      render action: 'new' , layout: 'bare'
+    end
     if @user.save
         session[:user_id] = @user.id
         redirect_to '/login'
@@ -54,9 +59,40 @@ class UserController < ApplicationController
   end
   
   def edit 
+    authenticate
   end
   
   def update 
+    authenticate
+    change = false
+    if @current_user.first_name != params[:first_name]
+      @current_user.first_name = params[:first_name]
+      change = true
+    end
+    if @current_user.last_name != params[:last_name]
+      @current_user.last_name = params[:last_name]
+      change = true
+    end
+    if @current_user.bio != params[:bio]
+      @current_user.last_name = params[:bio]
+      change = true
+    end
+
+    if params[:avatar] 
+      if !@current_user.avatar.attach(params[:avatar])
+        flash[:error] = ["Error in uploading avatar"]
+        render action: 'edit'
+        return
+      end
+      change = true
+    end
+
+    if change && !@current_user.save
+      flash[:error] = @current_user.errors.full_messages
+      render action: 'edit'
+      return 
+    end
+    redirect_to '/post'
   end
   
   def destroy 

@@ -17,9 +17,11 @@
   <nav class="navbar bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand">Flow</a>
-      <form class="mx-auto d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-      </form>
+      <%= form_with url: "/search", class: "mx-auto d-flex", method: :get do |form| %>
+        <%= form.text_field :query , class: "form-control me-2" , placeholder: "Search" %>
+        <%= form.submit "Search" , class: "btn btn-success" %>
+      <%end%>
+   
       <% if @current_user %> 
           <a href="/post/new" class="nav-item btn btn-success"> + Create a Post  </a>
             <li class="nav-item dropdown">
