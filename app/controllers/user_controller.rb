@@ -1,8 +1,18 @@
 class UserController < ApplicationController
   include AuthHelper
   include PostHelper
+  include Pagy::Backend
   def home
     authenticate
+    @pagy, @records = pagy(@current_user.followed_posts.where("archived = false").order(created_at: :desc))
+     post_ids = @records.map do |p|
+        p.id
+     end
+     @post_history ||= {}
+     @current_user.history.withPostId(post_ids).each do |p|
+       @post_history[p.post_id] = p.status
+     end
+
   end
   
   def new
@@ -11,6 +21,21 @@ class UserController < ApplicationController
   end
   
   def create
+    flash[:error] ||= []
+    required_params = [:first_name , :last_name , :email  , :username , :password , :password_confirmation , :avatar]
+    params_all = required_params.all? do |k|
+      if params[k].nil? || params[k].empty?
+        flash[:error] << "Missing #{k.to_s}"
+        false
+      else
+        true
+      end
+    end
+    if !params_all
+      render action: 'new' , layout: 'bare'
+      return
+    end
+   
     @user = User.new(first_name:params[:first_name],
                       last_name: params[:last_name],
                       email:params[:email],
@@ -23,6 +48,7 @@ class UserController < ApplicationController
     if !@user.avatar.attached?
       flash[:error] = [ "Avatar not able to upload"]
       render action: 'new' , layout: 'bare'
+      return
     end
     if @user.save
         session[:user_id] = @user.id
@@ -40,20 +66,19 @@ class UserController < ApplicationController
         render template: 'user/notfound'
     end
     @is_the_same_user = @show_user.id == @current_user.id
-    if @is_the_same_user
-      getAllPost
-      getAllFollowRequest
-      getAllFollowers
-      getAllFollowing
-
-      pp "ddd #{@all_follow_requests.length}" 
-    else
+    if !@is_the_same_user
       isFriend
       request_sent =  FollowRequest.where(from:@current_user, to:@show_user )
-      if request_sent.length == 1
-        @request_sent_present = true
+      if request_sent.length == 1 
+        if request_sent[0].approved == nil
+          @request_sent_present = 1
+        elsif request_sent[0].approved == false 
+          @request_sent_present = 2
+        else
+          @request_sent_present = 3
+        end
       else
-        @request_sent_present = false
+        @request_sent_present = 0
       end
     end
   end
@@ -100,7 +125,7 @@ class UserController < ApplicationController
   
   def follow
     authenticate
-    @to_follow_user =  User.find_by(username:params[:username])
+    @to_follow_user =  User.find(params[:id])
     if !@to_follow_user.present?
       render json: { err: ["user not found"] }
     end
@@ -111,6 +136,22 @@ class UserController < ApplicationController
       render json: { err: @follow_request.errors.full_messages}
     end
   end
+  
+  def unfollow
+    authenticate
+    connection = Connection.find_by(follow_by:@current_user.id , follow_to:params[:id])
+    if connection == nil
+      render json: { err: ["connection not found"]}
+      return
+    end
+    begin
+      connection.destroy
+      render json: { msg: "ok" }
+    rescue 
+      render json: {err: ["something went wrong"]}
+    end
+
+  end
 
   def accept_follow
     authenticate
@@ -120,10 +161,14 @@ class UserController < ApplicationController
     end
     @follow_connection = Connection.new(follow_by:@follow_request.from , follow_to:@follow_request.to)
     if @follow_connection.save
-      @follow_request.approved = true
-      if !@follow_request.save
+      begin
+        @follow_request.destroy 
+      rescue
         render json: { err: @follow_request.errors.full_messages}
       end
+      # @follow_request.approved = true
+      # if !@follow_request.save
+      #   render json: { err: @follow_request.errors.full_messages}
       render json: { msg: "ok"}
     else
       render json: { err: @follow_connection.errors.full_messages}
@@ -162,7 +207,8 @@ class UserController < ApplicationController
 
     if is_follower.present? || is_following.present?
       @is_friend = true
-      getShowUserPost
+      @pagy, @records = pagy(@show_user.posts.all.order(created_at: :desc))
+      # getShowUserPost
     else
       @is_friend = false
     end

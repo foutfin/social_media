@@ -1,18 +1,31 @@
 <% provide(:title, "Create Post") %>
-<div class="toast-container position-fixed">
-  <% if @post.errors.any? %>
-    <% @post.errors.full_messages.each do |message|%>
-      <div>
-        <h3> <%= message %> </h3>
-      </div>
+<div aria-live="polite" aria-atomic="true" class=" relative">
+  <div class="toast-container top-0 end-0 p-3">
+    <% flash.each do |type , messages| %>
+      <% if type == "error" %>
+        <% messages.each do |msg| %>
+          <div class="toast align-items-center text-bg-danger border-0 show " data-bs-autohide="true" data-bs-delay="1000" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">
+                <%= msg %>
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+        <%end%>
+      <%end%>
+      
+    </div> 
     <%end%>
-  <%end%>
+  </div>
 </div>
 
-<div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
+<div class=" mt-[40px] w-[40%] mx-auto mb-5  rounded">
+  <h4 class=" mt-[20px] text-center"> Create a Post </h4>
+  <div class="card p-3">
   <%= form_with url: "/post", method: :post do |form| %>
     <div class="mb-3">
-      <%= form.label :caption, "Caption" , class: "form-label" %>
+      <label for="caption" >Caption<sup class="text-red-500">*</sup></label>
       <%= form.text_field :caption , class: "form-control " , required:true %>
     </div>
     <div class="mb-3">
@@ -25,5 +38,5 @@
     </div>
     <%= form.submit "Create post" , class: "btn btn-primary" %>
   <% end %>
-
+  </div>
 </div>

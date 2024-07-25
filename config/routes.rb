@@ -20,7 +20,8 @@ Rails.application.routes.draw do
   get '/profile' , to: 'user#edit'
   put '/profile' , to: 'user#update'
   delete '/me' , to: 'user#destroy'
-  get '/follow/:username' , to: 'user#follow'
+  get '/follow/:id' , to: 'user#follow'
+  get '/unfollow/:id' , to: 'user#unfollow'
   get '/follow/accept/:reqid' , to: 'user#accept_follow'
   get '/follow/reject/:reqid' , to: 'user#reject_follow'
 

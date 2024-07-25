@@ -14,19 +14,37 @@ class PostController < ApplicationController
 
   def create
     authenticate
+    flash[:error] ||= []
+    required_params = [:caption]
+    params_all = required_params.all? do |k|
+      if params[k].nil? || params[k].empty?
+        flash[:error] << "Missing #{k.to_s}"
+        false
+      else
+        true
+      end
+    end
+  
+    if !params_all
+      render action: 'new' 
+      return
+    end
+    if (params[:body].empty? || params[:body].nil?) && ( params[:media] == nil)
+      flash[:error] << "Both body and media can't be empty"
+      render action: "new"
+      return
+    end
     @post = @current_user.posts.new(caption:params[:caption],
                       body: params[:body])
     if params[:media] != nil
-      pp "Runnign this"
-      ch = @post.media.attach(params[:media])
-      pp "Cheking return #{ch}"
-      if !@post.media.attached?
-        flash[:error] = ["Media not able to attach"]
-        render action: 'new'
+      if !@post.media.attach(params[:media])
+        flash[:error] = ["Something went wrong in media upload"]
+        render action: 'new' 
       end
     end
 
     if @post.save
+        flash[:success] = ["Post Created Successfully"]
         redirect_to action: 'index'
     else
       flash[:error] = @post.errors.full_messages
@@ -50,6 +68,7 @@ class PostController < ApplicationController
     if !@edit_post.present?
       render action: 'index'
     end
+    pp "checking #{@current_user.id } #{@edit_post.user.id}" 
   end
 
   def update
@@ -58,6 +77,14 @@ class PostController < ApplicationController
     end
     @edit_post.caption = params[:caption]
     @edit_post.body = params[:body]
+
+    # if params[:media] 
+    #   if !@edit_post.media.attach(params[:media])
+    #     flash[:error] = ["Error in uploading media"]
+    #     render action: 'edit'
+    #     return
+    #   end
+    # end
 
     if @edit_post.save
       redirect_to "/post/#{params[:id]}" 
@@ -73,6 +100,7 @@ class PostController < ApplicationController
     rescue => e
       puts "Error #{e}"
       render json: { err: "something goes wrong"}
+      return
     end
     render json: { msg: "ok"  } 
   end
@@ -89,14 +117,14 @@ class PostController < ApplicationController
         render json: { err: "not following"}
         return
       end
-      @current_post.likes += 1
     end
 
     @current_post.likes += 1
-    if @current_post.save
+    like = @current_user.history.new(post:@current_post,status: :liked)
+    if @current_post.save && like.save
       render json: {msg:"ok" , likes:@current_post.likes }
     else
-      render json: { err: @current_post.errors.full_message}
+      render json: { err: @current_post.errors.full_message }
     end
   end
 
@@ -116,7 +144,8 @@ class PostController < ApplicationController
     end
 
     @current_post.dislikes += 1
-    if @current_post.save
+    dislike = @current_user.history.new(post:@current_post,status: :disliked)
+    if @current_post.save && dislike.save
       render json: {msg:"ok" , dislikes:@current_post.dislikes }
     else
       render json: { err: @current_post.errors.full_message}

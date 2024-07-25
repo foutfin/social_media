@@ -1,2 +1,129 @@
-<% provide(:title, "home feed") %>
-<h2> Home Page </h2>
+<% provide(:title, "flow:- home") %>
+<div class='my-[50px] w-[40%] mx-auto flex flex-column gap-[20px] '>
+  <% if @records.length == 0 %>
+    <h4 class="text-center">No posts , Follow Someone </h4>
+  <%end%>
+  <% @records.each do |post| %>
+        <div class='card rounded-md p-3'>
+            <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
+            <p><%= post.body %></p>
+          <div id="media-carousel" class="carousel slide">
+      <div class="carousel-inner">
+        <% active=false %>
+        <% post.media.each do |m| %>
+          <% if !active %>
+            <div class="carousel-item active">
+              <% if m.content_type == "video/mp4" %>
+                <video controls class="d-block w-100 rounded-md" src=<%= url_for(m) %> ></video>
+              <%else%>
+                <%=image_tag(m , class: "d-block w-100")%>
+              <%end%>
+            </div>
+            <% active=true %>
+          <%else%>
+            <div class="carousel-item">
+              <% if m.content_type == "video/mp4" %>
+                <video controls class="d-block w-100 rounded-md" src=<%= url_for(m) %> ></video>
+              <%else%>
+                <%=image_tag(m , class: "d-block w-100 rounded-md")%>
+              <%end%>
+            </div>
+          <%end%>
+          
+        <%end%>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#media-carousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#media-carousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+          <div class="mt-[10px] flex justify-between ">
+            <div class=" flex gap-1">
+              <% if @post_history[post.id] == "liked" %>
+                <button disabled  onclick=<%= "likePost(event,'#like-#{post.id}','#{post.id}')"%> class='btn'>
+                    <div class="flex items-center gap-1">
+                        <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                        <span id=<%= "like-#{post.id}" %> class="like"><%= post.likes %> </span>
+                    </div>
+                </button>
+              <%else%>
+                <button onclick=<%= "likePost(event,'#like-#{post.id}','#{post.id}')"%> class='btn'>
+                    <div class="flex items-center gap-1">
+                        <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                        <span id=<%= "like-#{post.id}" %> class="like"><%= post.likes %> </span>
+                    </div> 
+                </button>
+              <%end%>
+
+              <% if @post_history[post.id] == "disliked" %>
+                <button disabled  class='btn'>
+                  <div class="flex items-center gap-1">
+                      <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
+                      <span id=<%= "dislike-#{post.id}" %> class="dislike"><%= post.dislikes %> </span>
+                  </div>
+                </button> 
+              <%else%>
+                <button  onclick=<%= "dislikePost(event,'#dislike-#{post.id}','#{post.id}')"%> class='btn'>
+                  <div class="flex items-center gap-1">
+                      <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
+                      <span id=<%= "dislike-#{post.id}" %> class="dislike"><%= post.dislikes %> </span>
+                  </div>
+                </button> 
+              <%end%>
+  
+                </div>
+                  
+            </div>
+        </div>
+      <%end%>
+
+      <div class="flex justify-center">
+        <%== pagy_bootstrap_nav(@pagy ) if @pagy.pages > 1 %>
+      </div>
+  
+
+</div>
+
+<script>
+  
+  async function likePost(ev,likeid, postId){
+    try{
+      const req = await fetch(`/post/${postId}/like`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        const likeEle = document.querySelector(`${likeid}`)
+        ev.target.parentNode.parentNode.disabled = true 
+        likeEle.textContent = data.likes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function dislikePost(ev ,dislikeid, postid){
+    try{
+      const req = await fetch(`/post/${postid}/dislike`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        const likeEle = document.querySelector(`${dislikeid}`)
+        ev.target.parentNode.parentNode.disabled = true 
+        likeEle.textContent = data.dislikes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+</script>

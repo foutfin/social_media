@@ -1,17 +1,36 @@
 <% provide(:title, "Sign Up") %>
 
-<div class="toast-container position-fixed">
-  <% if @user.errors.any? %>
-    <% @user.errors.full_messages.each do |message|%>
-      <div>
-        <h3> <%= message %> </h3>
-      </div>
+
+<div aria-live="polite" aria-atomic="true" class=" relative">
+  <div class="toast-container top-0 end-0 p-3">
+    <% flash.each do |type , messages| %>
+      <% if type == "error" %>
+        <% messages.each do |msg| %>
+          <div class="toast align-items-center text-bg-danger border-0 show " data-bs-autohide="true" data-bs-delay="1000" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">
+                <%= msg %>
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+        <%end%>
+      <%end%>
+      
+    </div> 
     <%end%>
-  <%end%>
+
+  </div>
 </div>
 
+    
 
-<div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
+
+
+
+<div class="signup-container  p-3 mb-1 ">
+  <h3 class="text-center"> Sign Up </h3>
+  <div class="card p-3">
   <%= form_with url: "/signup", method: :post do |form| %>
     <div class="mb-3">
       <%= form.label :first_name, "First Name" , class: "form-label" %>
@@ -48,7 +67,7 @@
     <%= form.submit "Create Account" , class: "btn btn-primary" %>
   <% end %>
   <p class='mt-1'> Already have an account <a href='/login' class=" text-blue-500 pointer  "> Log In </a> </p>
-
+  </div>
 </div>
 
 

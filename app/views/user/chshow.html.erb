@@ -1,6 +1,5 @@
 <% provide(:title, "User Page") %>
 
-<%= javascript_pack_tag 'handlers', 'data-turbolinks-track': 'reload' %>
 <div aria-live="polite" aria-atomic="true" class="relative">
   <div class="toast-container top-0 end-0 p-3">
     <% flash.each do |type , messages| %>
@@ -20,7 +19,7 @@
   </div>
 </div>
 
-<div class='my-[50px] w-[45%] mx-auto '>
+<div class='my-[50px] w-[40%] mx-auto '>
   <div class='flex gap-4 items-center'>
     <% if @show_user.avatar.attached? %>
       <%=image_tag(@show_user.avatar, alt: "profile picture" , class: ' w-[128px] h-[128px] rounded-full')%>
@@ -34,10 +33,8 @@
           <a href="/profile" class="btn btn-primary">Edit profile</a>
         <%else%>
           <% if !@is_friend %>
-            <% if @request_sent_present == 1 %>
+            <% if @request_sent_present %>
               <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-disabled' >Request Already sent</button>
-            <% elsif @request_sent_present == 2%>
-              <button disabled onclick=<%= "followUser('#{@show_user.username}')" %> class='btn btn-disabled' >Request Rejected(Try after 7 days)</button>
             <%else%>
               <button onclick=<%= "followUser('#{@show_user.id}')" %> class='btn btn-primary' >+ Follow</button>
             <%end%>
@@ -47,25 +44,20 @@
   </div>
 
   <div class='h-[2px] rounded-sm bg-black my-[20px] '></div>
-
   <div>
     <% if @is_friend %>
-
-      <% if @records.length == 0 %>
+        <% if @show_user_posts.length == 0 %>
           <h4 class="mt-[80px] text-center">No Post</h4>
-      <%end%>
-      
-      <div class="flex flex-column gap-3">
-        <% @records.each do |post| %>
-          <% if post.archived == false %>
+        <%end%>
+        <div class="flex flex-column gap-3">
+        <% @show_user_posts.each do |post| %>
           <div class=' card rounded-md p-3'>
             <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
             <p><%= post.body %></p>
             <%= render   :partial =>  "shared/carousel" , :locals => { :post => post } %>
-
             <div class="flex justify-between ">
-              <div class=" flex gap-1">
-                <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
+                <div class=" flex gap-1">
+                  <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
                     <div class="flex items-center gap-1">
                       <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
                       <span class="like"><%= post.likes %> </span>
@@ -77,126 +69,94 @@
                       <span class="dislike"><%= post.dislikes %> </span>
                     </div>
                   </button>
-              </div>
+                </div>
             </div>
-          </div>
-        <%end%> 
-        <%end%>
-      </div>
-      <div class="flex justify-center mt-[20px]">
-        <%== pagy_bootstrap_nav(@pagy ) if @pagy.pages > 1 %>
-      </div>
+         </div>
+       <%end%>
+        </div>
     <%end%>
-  </div>
+    </div>
+
+
 
   <div>
     <% if @is_the_same_user && !@is_friend %>
       <ul class="nav nav-tabs" id="myTab" role="tablist">
-
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="post-tab" data-bs-toggle="tab" data-bs-target="#posts-tab-panel" type="button" role="tab" aria-controls="posts-tab-panel" aria-selected="true">
             All Posts
           </button>
         </li>
-
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived-tab-panel" type="button" role="tab" aria-controls="archived-tab-panel" aria-selected="false">
             Archived
           </button>
         </li>
-
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="followers-tab" data-bs-toggle="tab" data-bs-target="#followers-tab-panel" type="button" role="tab" aria-controls="followers-tab-panel" aria-selected="false">
-            Followers ( <%= @current_user.followers.length %> )
+            Followers
           </button>
         </li>
-
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following-tab-panel" type="button" role="tab" aria-controls="following-tab-panel" aria-selected="false">
-            Following ( <%= @current_user.following.length %> )
+            Following
           </button>
         </li>
-
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="followrequest-tab" data-bs-toggle="tab" data-bs-target="#followrequest-tab-panel" type="button" role="tab" aria-controls="contact-tab-panel" aria-selected="false">
-            Follow requests 
+            Follow requests
           </button>
         </li>
-
       </ul>
-      
       <div class="tab-content" id="myTabContent">
-
         <div class="tab-pane fade show active mt-[20px]" id="posts-tab-panel" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-
           <% if @current_user.posts.unArchived.length == 0 %>
             <h5 class=" mt-[60px] text-center"> No Posts , Create one</h5>
           <%end%>
-
           <div class="flex flex-column gap-3">
-            <% @current_user.posts.unArchived.each do |post| %>
-              <div class='card rounded-md p-3'>
-                <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
-                <p><%= post.body %></p>
-                <%= render   :partial =>  "shared/carousel" , :locals => { :post => post } %>
-
-                <div class="mt-[10px] flex justify-between ">
-                  <div class=" flex gap-3">
+          <% @current_user.posts.unArchived.each do |post| %>
+            <div class='card rounded-md p-3'>
+              <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
+              <p><%= post.body %></p>
+              <%= render   :partial =>  "shared/carousel" , :locals => { :post => post } %>
+              <div class="mt-[10px] flex justify-between ">
+                  <div class=" flex gap-1">
+                    <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
                       <div class="flex items-center gap-1">
                         <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
-                        <span class="like"  ><%= post.likes %> </span>
+                        <span class="like"><%= post.likes %> </span>
                       </div>
-                    
-                  
+                    </button>
+                    <button onclick=<%= "dislikePost(event,'#{post.id}')"%> class='btn'>
                       <div class="flex items-center gap-1">
                         <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
-                        <span  class="dislike"><%= post.dislikes %> </span>
+                        <span class="dislike"><%= post.dislikes %> </span>
                       </div>
-                    
+                    </button>
                   </div>
                   <div class="flex gap-1">
                     <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
+
                     <button onclick=<%= "archivePost(event,'#{post.id}')"%> class='btn btn-secondary'>Archive</button>
                     <button onclick=<%= "deletePost(event,'#{post.id}')"%> class='btn btn-danger'>Delete</button>
                   </div>
-                </div>
-
               </div>
-            <%end%>
-          </div>
-
-        </div>
-        
-        <div class="tab-pane fade" id="archived-tab-panel" role="tabpanel" aria-labelledby="archived-tab" tabindex="1">
-          
-          <% if @current_user.posts.archived.length == 0 %>
-            <h5 class=" mt-[60px] text-center"> No Posts , Create one</h5>
+            </div>
           <%end%>
-
-          <div class="flex flex-column gap-3 mt-[20px]">
-            <% @current_user.posts.archived.each do |post| %>
-              <div class='card rounded-md p-3'>
-                <h4><a href=<%= "/post/#{post.id}" %> class="text-black" ><%= post.caption %></a></h4>
-                <p><%= post.body %></p>
-                <%= render   :partial =>  "shared/carousel" , :locals => { :post => post } %>
-
-                <div class="mt-[10px] flex justify-between ">
-                  <div></div> 
-                  <div class="flex gap-1">
-                    <a href=<%= "/post/#{post.id}/edit"%> class='btn btn-secondary'>Edit</a>
-                    <button onclick=<%= "deletePost(event,'#{post.id}')"%> class='btn btn-danger'>Delete</button>
-                  </div>
-                </div>
-
-              </div>
-            <%end%>
-          </div>
-          
         </div>
+        <div class="tab-pane fade" id="archived-tab-panel" role="tabpanel" aria-labelledby="archived-tab" tabindex="1">
+          dsfsdf
+          <% if @current_user.posts.archived.length == 0 %>
+            <h5 class=" mt-[60px] text-center"> No Posts</h5>
+          <%end%>
+          <% @current_user.posts.archived.each do |post| %>
+            <p> <%= post.caption %> </p>
+          <%end%>
+        </div>
+
 
         <div class="tab-pane fade" id="followers-tab-panel" role="tabpanel" aria-labelledby="followers-tab" tabindex="2">
-          <div id="followers-container" class="flex flex-column gap-2 mt-[20px]">
-
+          <div id="followers-container" class="flex flex-column gap-2">
             <% if @current_user.followers.length == 0 %>
               <h5 id="follow-request" class= "mt-[80px] text-center" >
                 Noone Follows you
@@ -206,29 +166,24 @@
                 Noone follows you
               </h5>
             <%end%>
-            
+ 
             <% @current_user.followers.each do |user| %>
-              <div class='card rounded-md p-2 '>
-                <div class=" flex gap-1  items-center">
-                  
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between mt-[20px]'>
+              <div class="flex gap-1 items-center">
                   <% if user.follow_by.avatar.attached? %>
                     <%=image_tag(user.follow_by.avatar, alt: "profile picture" , class: ' w-[48px] h-[48px] rounded-full')%>
                   <%else%>
                     <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[48px] h-[48px] rounded-full')%>
-                  <%end%>
+                   <%end%>
                   <a href=<%= "/user/#{user.follow_by.username}" %> ><h5><%= user.follow_by.username %></h5></a>
-
-                </div>
               </div>
-            <%end%>
+            </div>
+          <%end%> 
           </div>
-
         </div>
-
         <div class="tab-pane fade" id="following-tab-panel" role="tabpanel" aria-labelledby="following-tab" tabindex="3">
-          <div id="followers-container" class="flex flex-column gap-2 mt-[20px]">
-
-            <% if @current_user.followers.length == 0 %>
+          <div id="following-user-container" class="flex flex-column gap-2">
+            <% if @current_user.following.length == 0 %>
               <h5 id="follow-request" class= "mt-[80px] text-center" >
                 You are not following anyone
               </h5>
@@ -237,74 +192,86 @@
                 You are not following anyone
               </h5>
             <%end%>
-            
+
             <% @current_user.following.each do |connection| %>
-              <div class='card rounded-md p-2 flex flex-row justify-between'>
-                <div class=" flex gap-1  items-center">
-                  
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+              <div class="flex gap-1 items-center">
                   <% if connection.follow_to.avatar.attached? %>
-                    <%=image_tag(connection.follow_to.avatar, alt: "profile picture" , class: ' w-[48px] h-[48px] rounded-full')%>
+                    <%=image_tag(connection.follow_to.avatar, alt: "profile picture" , class: ' w-[48px] rounded-full')%>
                   <%else%>
-                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[48px] h-[48px] rounded-full')%>
-                  <%end%>
+                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[48px] rounded-full')%>
+                   <%end%>
                   <a href=<%= "/user/#{connection.follow_to.username}" %> ><h5><%= connection.follow_to.username %></h5></a>
-                </div>
-                <button onclick=<%= "unFollow(event,'#{connection.follow_to.id}')"%>  class="btn btn-danger">Unfollow</button>
               </div>
-            <%end%>
-          </div>  
-
+              <button onclick=<%= "unFollow(event,'#{connection.follow_to.id}')"%>  class="btn btn-danger">Unfollow</button>
+            </div>
+          <%end%> 
+          </div>
         </div>
-
         <div class="tab-pane fade" id="followrequest-tab-panel" role="tabpanel" aria-labelledby="followrequest-tab" tabindex="4">
-          <div id="follow-request-container" class="flex flex-column mt-[20px] gap-2">
-
+          <div id="follow-request-container" class="flex flex-column gap-2">
             <% if @current_user.follow_requests.length == 0 %>
               <h5 id="follow-request" class= "mt-[80px] text-center" >
                 No request pending
               </h5>
-            <%else%>
+              <%else%>
               <h5 id="follow-request" class= "mt-[80px] text-center hidden" >
                 No request pending
               </h5>
             <%end%>
-            
+   
             <% @current_user.follow_requests.each do |request| %>
-              <% if request.approved == nil %>
-              <div class='card rounded-md p-2 flex flex-row items-center justify-between'>
-                <div class="flex gap-1 items-center">
+            <div class='shadow-md rounded-md p-2 flex items-center justify-between'>
+              <div class="flex gap-1 items-center">
                   <% if request.from.avatar.attached? %>
-                    <%=image_tag(request.from.avatar, alt: "profile picture" , class: ' w-[64px] h-[64px] rounded-full')%>
+                    <%=image_tag(request.from.avatar, alt: "profile picture" , class: ' w-[64px] rounded-full')%>
                   <%else%>
-                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[64px] h-[64px] rounded-full')%>
+                    <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[64px] rounded-full')%>
                    <%end%>
                   <h5><%= request.from.username %></h5>
-                </div>
-                <div class="flex gap-1">
-                  <button onclick=<%= "acceptFollowRequest(event,'#{request.id}')"%> class="btn btn-primary">
-                    Accept
-                  </button>
-                  <button onclick=<%= "rejectFollowRequest(event,'#{request.id}')"%> class="btn btn-secondary">
-                    Reject
-                  </button>
-                </div>
               </div>
-            <%end%>
-            <%end%>
-    
-          </div>
+              <div class="flex gap-1">
+                <button onclick=<%= "acceptFollowRequest(event,'#{request.id}')"%> class="btn btn-primary">
+                  Accept
+                </button>
+                <button onclick=<%= "rejectFollowRequest(event,'#{request.id}')"%> class="btn btn-secondary">
+                  Reject
+                </button>
+              </div>
+            </div>
+          <%end%>
 
         </div>
-
       </div>
+      
     <%end%>
+      </div>
   </div>
-
-
 </div>
 
-
 <script>
+
+  
+
+  async function followUser(to){
+    console.log("called ")
+    try{
+        const req = await fetch(`/follow/${to}`);
+        if(req.status == 200 ){
+          const data =  req.json();
+          console.log(data , 'msg' in data && data.msg == "ok" );
+          if( 'msg' in data && data.msg == "ok" ){
+            alert("Add follow request");
+            console.log("not called")
+          }
+        }
+
+    }catch(err){
+      console.log(err);
+
+    }
+  }
+  
   function showStatus(containerId){
     const container = document.querySelector(`#${containerId}`)
     console.log("I called ",container ,container.childElementCount)
@@ -313,25 +280,7 @@
       container.children[0].classList.toggle('hidden');
     }
   }
-  async function followUser(to){
-    try{
-        const req = await fetch(`/follow/${to}`);
-        if( !req.ok ){
-          console.log("Something Went wronge") 
-          return 
-        }
-        const data =  req.json();
-      if( 'msg' in data && data.msg == "ok" ){
-        console.log("Called")
-        window.location.reload()    
-      }
-
-    }catch(err){
-      console.log(err);
-
-    }
-  }
-
+  
   async function acceptFollowRequest(ev, reqid){
     console.log("Accept request called ")
     try{
@@ -343,22 +292,29 @@
       const data = await req.json()
       if( 'msg' in data && data.msg == "ok" ){ 
         ev.target.parentNode.parentNode.remove()
-        window.location.reload()
+        showStatus("follow-request-container")
+
       }
     }catch(err){
       console.log(err)
     }
   }
 
+  
+
   async function rejectFollowRequest(ev,reqid){
+    console.log("Reject Request called ")
     try{
         const req = await fetch(`/follow/reject/${reqid}`);
         if( !req.ok ){
-          console.log("Something Went Wronge") 
-        }
-        const data =  req.json();
-        if( 'msg' in data && data.msg == "ok" ){
-          ev.target.parentNode.parentNode.remove()
+          const data =  req.json();
+          console.log(data , 'msg' in data && data.msg == "ok" );
+          if( 'msg' in data && data.msg == "ok" ){
+            alert("Reject Request Called");
+            console.log("Reject Request Called")
+            ev.target.parentNode.parentNode.remove()
+            showStatus("follow-request-container")
+          }
         }
 
     }catch(err){
@@ -366,6 +322,7 @@
 
     }
   }
+
 
   async function deletePost(ev , postid){
     console.log("Delete post called")
@@ -387,7 +344,44 @@
     }
   }
 
+  async function likePost(ev , postid){
+    console.log("Like post called",ev.target.nextSibling ,ev)
+    try{
+      const req = await fetch(`/post/${postid}/like`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+          ev.target.parentNode.parentNode.disabled = true 
+          ev.target.nextElementSibling.textContent = data.likes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function dislikePost(ev , postid){
+    console.log("Dislike post called" , ev.target.nextSibling)
+    try{
+      const req = await fetch(`/post/${postid}/dislike`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        ev.target.parentNode.parentNode.disabled = true 
+        ev.target.nextElementSibling.textContent = data.dislikes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
   async function unFollow(ev , userId){
+    console.log("Unfollow  called" , ev.target.parentNode.parentNode)
     try{
       const req = await fetch(`/unfollow/${userId}`)
       if(!req.ok){
@@ -397,7 +391,8 @@
       const data = await req.json()
       if( 'msg' in data && data.msg == "ok" ){ 
         ev.target.parentNode.parentNode.remove()
-        window.location.reload()
+        showStatus("following-container")
+
       }
     }catch(err){
       console.log(err)
@@ -415,15 +410,11 @@
       const data = await req.json()
       if( 'msg' in data && data.msg == "ok" ){ 
         ev.target.parentNode.parentNode.parentNode.remove()
-        window.location.reload()
 
       }
     }catch(err){
       console.log(err)
     }
   }
-  
+
 </script>
-
-
-

@@ -1,5 +1,28 @@
 <% provide(:title, "Log in") %>
-<div class="signup-container shadow p-3 mb-5 bg-body-tertiary rounded">
+
+<div aria-live="polite" aria-atomic="true" class=" relative">
+  <div class="toast-container top-0 end-0 p-3">
+    <% flash.each do |type , messages| %>
+      <% if type == "error" %>
+        <% messages.each do |msg| %>
+          <div class="toast align-items-center text-bg-danger border-0 show " data-bs-autohide="true" data-bs-delay="1000" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body">
+                <%= msg %>
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+        <%end%>
+      <%end%>
+    </div> 
+    <%end%>
+  </div>
+</div>
+
+<div class="signup-container mb-5 mt-5 rounded ">
+  <h3 class="text-center">Log In</h3>
+  <div class="card p-3">
   <%= form_with url: "/login", method: :post do |form| %>
     <div class="mb-3">
       <%= form.label :username, "Username" , class: "form-label" %>
@@ -11,7 +34,7 @@
     </div>
     <%= form.submit "Log In" , class: "btn btn-primary" %>
   <% end %>
-
+  </div>
 </div>
 
 

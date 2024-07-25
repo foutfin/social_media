@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_07_23_064410) do
+ActiveRecord::Schema.define(version: 2024_07_25_085928) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -62,6 +62,16 @@ ActiveRecord::Schema.define(version: 2024_07_23_064410) do
     t.index ["to_id"], name: "index_follow_requests_on_to_id"
   end
 
+  create_table "histories", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "post_id", null: false
+    t.integer "status", default: 0
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["post_id"], name: "index_histories_on_post_id"
+    t.index ["user_id"], name: "index_histories_on_user_id"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string "caption"
     t.text "body"
@@ -100,6 +110,8 @@ ActiveRecord::Schema.define(version: 2024_07_23_064410) do
   add_foreign_key "connections", "users", column: "follow_to_id"
   add_foreign_key "follow_requests", "users", column: "from_id"
   add_foreign_key "follow_requests", "users", column: "to_id"
+  add_foreign_key "histories", "posts"
+  add_foreign_key "histories", "users"
   add_foreign_key "posts", "users"
   add_foreign_key "resources", "posts"
 end

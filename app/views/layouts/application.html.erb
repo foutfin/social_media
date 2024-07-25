@@ -16,27 +16,34 @@
   <body>
   <nav class="navbar bg-body-tertiary">
     <div class="container-fluid">
-      <a class="navbar-brand">Flow</a>
+      <a href="/home" class="navbar-brand">Flow</a>
       <%= form_with url: "/search", class: "mx-auto d-flex", method: :get do |form| %>
         <%= form.text_field :query , class: "form-control me-2" , placeholder: "Search" %>
         <%= form.submit "Search" , class: "btn btn-success" %>
       <%end%>
-   
-      <% if @current_user %> 
+      <div class="flex gap-2 items-center">
+        <% if @current_user %> 
           <a href="/post/new" class="nav-item btn btn-success"> + Create a Post  </a>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <%= @current_user.username %>
-              </a>
-              <ul class="dropdown-menu">
-                <li><a class='dropdown-item ' href='/logout'>Logout </a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li>
-              </ul>
-            </li>
+          <li class="nav-item dropdown ">
+            <a class="nav-link dropdown-toggle !flex flex-row items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <% if @current_user.avatar.attached? %>
+                <%=image_tag(@current_user.avatar, alt: "profile picture" , class: ' w-[40px] h-[40px] rounded-full')%>
+              <%else%>
+                <%=image_tag('default_pic.png', alt: "profile picture" , class: ' w-[40px] h-[40px] rounded-full')%>
+              <%end%>
+            </a>
+            <ul class="dropdown-menu -translate-x-32">
+              <li><a class='dropdown-item ' href='/post'>My Profile </a></li>
+              <li><a class='dropdown-item ' href='/logout'>Logout </a></li>
+             
+            </ul>
+          </li>
 
       <%end%>
+      </div>
+      
     </div>
+
   </nav>
     <%= yield %>
   </body>
