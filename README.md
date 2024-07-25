@@ -9,8 +9,9 @@
 - [X] Update , Delete , Like , Dislike and Archive Post
 - [X] Resource Media Upload (Profile Pic , Images , video) Handling
 - [X] Searching Users
-- [ ] Home Feed
+- [X] Home Feed
 - [X] User Profile Update
+- [X] Specs 
 - [ ] Code Cleanup
 
 ### Database Schema
