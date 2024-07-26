@@ -26,7 +26,7 @@ gem 'aws-sdk-s3'
 gem 'active_storage_validations'
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
-
+gem 'rails-controller-testing'
 gem 'pagy'
 
 # Reduces boot times through caching; required in config/boot.rb

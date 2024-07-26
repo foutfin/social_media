@@ -1,19 +1,17 @@
 class PostController < ApplicationController
   include AuthHelper
   include UserHelper
+  before_action :authenticate
 
   def index
-    authenticate
     redirect_to "/user/#{@current_user.username}"
   end
 
   def new
-    authenticate
     @post = @current_user.posts.new
   end
 
   def create
-    authenticate
     flash[:error] ||= []
     required_params = [:caption]
     params_all = required_params.all? do |k|
@@ -53,17 +51,20 @@ class PostController < ApplicationController
   end
 
   def show
-    authenticate
-    @current_post = Post.find(params[:id])
-    if !@current_post.present? 
+    begin
+      @current_post = Post.find(params[:id])
+    rescue
       render template: 'post/post_not_found'
+      return
     end
-    pp "Media #{@current_post.media} length :- #{@current_post.media.length}"
+
+    pp "Media #{@current_post.user.id} #{@current_user.id} length :- #{@current_post.media.length}"
     sameFollowing @current_post.user
+    @same_user = @current_post.user.id == @current_user.id
+    pp "Is friend #{@is_friend}"
   end
 
   def edit
-    authenticate
     @edit_post = Post.find(params[:id])
     if !@edit_post.present?
       render action: 'index'
@@ -94,7 +95,6 @@ class PostController < ApplicationController
   end
 
   def destroy
-    authenticate
     begin
       @current_user.posts.destroy(params[:id])
     rescue => e
@@ -106,7 +106,6 @@ class PostController < ApplicationController
   end
 
   def like
-    authenticate
     @current_post = Post.find(params[:id])
     if !@current_post.present? 
       render template: 'post/post_not_found'
@@ -129,7 +128,6 @@ class PostController < ApplicationController
   end
 
   def dislike
-    authenticate
     @current_post = Post.find(params[:id])
     if !@current_post.present? 
       render template: 'post/post_not_found'
@@ -153,7 +151,6 @@ class PostController < ApplicationController
   end
 
   def archive
-    authenticate
     fetched_post = @current_user.posts.find(params[:id])
     if !fetched_post.present?
         render json: { err: "Post is not found"}
@@ -171,7 +168,7 @@ class PostController < ApplicationController
   def sameFollowing(show_user)
     is_follower = Connection.find_by( follow_by: @current_user , follow_to:show_user)
     is_following = Connection.find_by( follow_by: show_user , follow_to:@current_user)
-
+    pp "Foloweer fds #{is_follower.present?} #{is_following.present?}"
     if is_follower.present? || is_following.present?
       @is_friend = true
     else

@@ -176,4 +176,13 @@ RSpec.describe User, type: :model do
     )
     expect(user).to_not be_valid
   end
+
+
+  it { expect(described_class.reflect_on_association(:posts).macro).to eq(:has_many) } 
+  it { expect(described_class.reflect_on_association(:followers).macro).to eq(:has_many) } 
+  it { expect(described_class.reflect_on_association(:following).macro).to eq(:has_many) } 
+  it { expect(described_class.reflect_on_association(:follow_requests).macro).to eq(:has_many) } 
+  it { expect(described_class.reflect_on_association(:followed_posts).macro).to eq(:has_many) } 
+  it { expect(described_class.reflect_on_association(:history).macro).to eq(:has_many) } 
+
 end

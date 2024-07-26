@@ -41,4 +41,6 @@ RSpec.describe Post, type: :model do
     subject.media.attach(io: File.open("/home/nav/Pictures/images/pic.avif") , filename: 'pic.avif' , content_type: 'image/avif')
     expect(subject).to be_valid
   end
+  
+  it { expect(described_class.reflect_on_association(:user).macro).to eq(:belongs_to) } 
 end

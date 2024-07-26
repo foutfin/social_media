@@ -31,7 +31,7 @@ class SessionController < ApplicationController
   def logout
     session[:user_id] = nil
     @current_user = nil
-    redirect_to "/"
+    redirect_to "/login"
   end
 
 end

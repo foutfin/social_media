@@ -1,6 +1,6 @@
 <% provide(:title, @current_post.caption) %>
 <div class='mt-[40px] w-[40%] mx-auto '>
-  <% if @is_friend || @current_user %>
+  <% if @same_user || @is_friend %>
     <h4><%= @current_post.caption  %></h4>
     <div class='flex gap-1 items-center'>
       <%=image_tag("default_pic.png", alt: "profile picture" , class: ' w-[64px] rounded-full')%>

@@ -51,7 +51,7 @@
   <div>
     <% if @is_friend %>
 
-      <% if @records.length == 0 %>
+      <% if @records.unArchived.length == 0 %>
           <h4 class="mt-[80px] text-center">No Post</h4>
       <%end%>
       
@@ -65,18 +65,38 @@
 
             <div class="flex justify-between ">
               <div class=" flex gap-1">
-                <button onclick=<%= "likePost(event,'#{post.id}')"%> class='btn'>
+                <% if @post_history[post.id] == "liked" %>
+                <button disabled  onclick=<%= "likePost(event,'#like-#{post.id}','#{post.id}')"%> class='btn'>
                     <div class="flex items-center gap-1">
-                      <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
-                      <span class="like"><%= post.likes %> </span>
+                        <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                        <span id=<%= "like-#{post.id}" %> class="like"><%= post.likes %> </span>
                     </div>
-                  </button>
-                  <button onclick=<%= "dislikePost(event,'#{post.id}')"%> class='btn'>
+                </button>
+              <%else%>
+                <button onclick=<%= "likePost(event,'#like-#{post.id}','#{post.id}')"%> class='btn'>
                     <div class="flex items-center gap-1">
+                        <%=image_tag("like.png", class: ' w-[32px] rounded-full')%>
+                        <span id=<%= "like-#{post.id}" %> class="like"><%= post.likes %> </span>
+                    </div> 
+                </button>
+              <%end%>
+
+              <% if @post_history[post.id] == "disliked" %>
+                <button disabled  class='btn'>
+                  <div class="flex items-center gap-1">
                       <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
-                      <span class="dislike"><%= post.dislikes %> </span>
-                    </div>
-                  </button>
+                      <span id=<%= "dislike-#{post.id}" %> class="dislike"><%= post.dislikes %> </span>
+                  </div>
+                </button> 
+              <%else%>
+                <button  onclick=<%= "dislikePost(event,'#dislike-#{post.id}','#{post.id}')"%> class='btn'>
+                  <div class="flex items-center gap-1">
+                      <%=image_tag("dislike.png", class: ' w-[32px] rounded-full')%>
+                      <span id=<%= "dislike-#{post.id}" %> class="dislike"><%= post.dislikes %> </span>
+                  </div>
+                </button> 
+              <%end%>
+
               </div>
             </div>
           </div>
@@ -119,7 +139,7 @@
 
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="followrequest-tab" data-bs-toggle="tab" data-bs-target="#followrequest-tab-panel" type="button" role="tab" aria-controls="contact-tab-panel" aria-selected="false">
-            Follow requests 
+            Follow requests ( <%= @current_user.follow_requests.length %> )
           </button>
         </li>
 
@@ -228,7 +248,7 @@
         <div class="tab-pane fade" id="following-tab-panel" role="tabpanel" aria-labelledby="following-tab" tabindex="3">
           <div id="followers-container" class="flex flex-column gap-2 mt-[20px]">
 
-            <% if @current_user.followers.length == 0 %>
+            <% if @current_user.following.length == 0 %>
               <h5 id="follow-request" class= "mt-[80px] text-center" >
                 You are not following anyone
               </h5>
@@ -322,8 +342,7 @@
         }
         const data =  req.json();
       if( 'msg' in data && data.msg == "ok" ){
-        console.log("Called")
-        window.location.reload()    
+        window.location.reload()
       }
 
     }catch(err){
@@ -422,6 +441,42 @@
       console.log(err)
     }
   }
+  async function likePost(ev,likeid, postId){
+    try{
+      const req = await fetch(`/post/${postId}/like`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        const likeEle = document.querySelector(`${likeid}`)
+        ev.target.parentNode.parentNode.disabled = true 
+        likeEle.textContent = data.likes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function dislikePost(ev ,dislikeid, postid){
+    try{
+      const req = await fetch(`/post/${postid}/dislike`)
+      if(!req.ok){
+        console.log("Went wrong")
+        return
+      }
+      const data = await req.json()
+      if( 'msg' in data && data.msg == "ok" ){
+        const likeEle = document.querySelector(`${dislikeid}`)
+        ev.target.parentNode.parentNode.disabled = true 
+        likeEle.textContent = data.dislikes
+      }
+    }catch(err){
+      console.log(err)
+    }
+  }
+
   
 </script>
 

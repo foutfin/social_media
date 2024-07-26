@@ -2,17 +2,11 @@ class UserController < ApplicationController
   include AuthHelper
   include PostHelper
   include Pagy::Backend
+  before_action :authenticate , except: [:new , :create]  
+  
   def home
-    authenticate
     @pagy, @records = pagy(@current_user.followed_posts.where("archived = false").order(created_at: :desc))
-     post_ids = @records.map do |p|
-        p.id
-     end
-     @post_history ||= {}
-     @current_user.history.withPostId(post_ids).each do |p|
-       @post_history[p.post_id] = p.status
-     end
-
+    postHistory
   end
   
   def new
@@ -22,7 +16,7 @@ class UserController < ApplicationController
   
   def create
     flash[:error] ||= []
-    required_params = [:first_name , :last_name , :email  , :username , :password , :password_confirmation , :avatar]
+    required_params = [:first_name , :last_name , :email  , :username , :password , :password_confirmation ]
     params_all = required_params.all? do |k|
       if params[k].nil? || params[k].empty?
         flash[:error] << "Missing #{k.to_s}"
@@ -44,12 +38,15 @@ class UserController < ApplicationController
                       password:params[:password],
                       password_confirmation: params[:confirm_password] 
                     )
-    @user.avatar.attach(params[:avatar])
-    if !@user.avatar.attached?
-      flash[:error] = [ "Avatar not able to upload"]
-      render action: 'new' , layout: 'bare'
-      return
+    if params[:avatar] != nil
+      @user.avatar.attach(params[:avatar])
+      if !@user.avatar.attached?
+        flash[:error] = [ "Avatar not able to upload"]
+        render action: 'new' , layout: 'bare'
+        return
+      end
     end
+
     if @user.save
         session[:user_id] = @user.id
         redirect_to '/login'
@@ -60,14 +57,17 @@ class UserController < ApplicationController
   end
 
   def show
-    authenticate 
     @show_user = User.find_by(username:params[:username])
     if !@show_user.present?
         render template: 'user/notfound'
+        return
     end
-    @is_the_same_user = @show_user.id == @current_user.id
+    @is_the_same_user = ( @show_user.id == @current_user.id )
     if !@is_the_same_user
       isFriend
+      if @is_friend
+        postHistory
+      end
       request_sent =  FollowRequest.where(from:@current_user, to:@show_user )
       if request_sent.length == 1 
         if request_sent[0].approved == nil
@@ -84,11 +84,9 @@ class UserController < ApplicationController
   end
   
   def edit 
-    authenticate
   end
   
   def update 
-    authenticate
     change = false
     if @current_user.first_name != params[:first_name]
       @current_user.first_name = params[:first_name]
@@ -121,10 +119,21 @@ class UserController < ApplicationController
   end
   
   def destroy 
+    begin
+      FollowRequest.where("from_id = ?", @current_user.id).each do |r|
+        r.destroy
+      end
+      @current_user.destroy
+      session[:user_id] = nil
+      @current_user = nil
+      redirect_to '/signup'
+    rescue
+      flash[:error] = ["Something went wrong"]
+      redirect_to '/signup'
+    end
   end
   
   def follow
-    authenticate
     @to_follow_user =  User.find(params[:id])
     if !@to_follow_user.present?
       render json: { err: ["user not found"] }
@@ -138,7 +147,6 @@ class UserController < ApplicationController
   end
   
   def unfollow
-    authenticate
     connection = Connection.find_by(follow_by:@current_user.id , follow_to:params[:id])
     if connection == nil
       render json: { err: ["connection not found"]}
@@ -154,7 +162,6 @@ class UserController < ApplicationController
   end
 
   def accept_follow
-    authenticate
     @follow_request =  FollowRequest.find(params[:reqid])
     if !@follow_request.present?
       render json: { err: ["Request not found"] }
@@ -176,7 +183,6 @@ class UserController < ApplicationController
   end
 
   def reject_follow
-    authenticate
     @follow_request =  FollowRequest.find(params[:reqid])
     if !@follow_request.present?
       render json: { err: ["Request not found"] }
@@ -189,6 +195,17 @@ class UserController < ApplicationController
   end
 
   private 
+  
+  def postHistory
+    post_ids = @records.map do |p|
+      p.id
+    end
+    @post_history ||= {}
+    @current_user.history.withPostId(post_ids).each do |p|
+      @post_history[p.post_id] = p.status
+    end
+  end
+
   def getAllFollowRequest
     @all_follow_requests = FollowRequest.where(to:@current_user , approved: nil)
   end
@@ -201,13 +218,14 @@ class UserController < ApplicationController
     @all_following = Connection.where(follow_by:@current_user)
   end
 
-  def isFriend
+  def isFriend 
     is_follower = Connection.find_by( follow_by: @current_user , follow_to:@show_user)
     is_following = Connection.find_by( follow_by: @show_user , follow_to:@current_user)
 
     if is_follower.present? || is_following.present?
       @is_friend = true
       @pagy, @records = pagy(@show_user.posts.all.order(created_at: :desc))
+      pp "is there any record #{@records} #{@records.length}"
       # getShowUserPost
     else
       @is_friend = false
