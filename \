@@ -62,9 +62,8 @@ class PostController < ApplicationController
   end
 
   def edit
-    begin
-      @edit_post = Post.find(params[:id])
-    rescue
+    @edit_post = Post.find(params[:id])
+    if !@edit_post.present?
       render action: 'index'
     end
   end
@@ -82,6 +81,14 @@ class PostController < ApplicationController
     @edit_post.caption = params[:caption]
     @edit_post.body = params[:body]
 
+    # if params[:media] 
+    #   if !@edit_post.media.attach(params[:media])
+    #     flash[:error] = ["Error in uploading media"]
+    #     render action: 'edit'
+    #     return
+    #   end
+    # end
+
     if @edit_post.save
       redirect_to "/post/#{params[:id]}" 
     else
@@ -93,7 +100,8 @@ class PostController < ApplicationController
   def destroy
     begin
       @current_user.posts.destroy(params[:id])
-    rescue
+    rescue => e
+      puts "Error #{e}"
       render json: { err: "something goes wrong"}
       return
     end
@@ -101,14 +109,10 @@ class PostController < ApplicationController
   end
 
   def like
-
-    begin
-      @current_post = Post.find(params[:id])
-    rescue 
-      render json: { err: "post not found" }
-      return
+    @current_post = Post.find(params[:id])
+    if !@current_post.present? 
+      render template: 'post/post_not_found'
     end
-
     if @current_user.id != @current_post.user.id 
       sameFollowing @current_post.user
       if !@is_friend 
@@ -123,16 +127,13 @@ class PostController < ApplicationController
       render json: {msg:"ok" , likes:@current_post.likes }
     else
       render json: { err: @current_post.errors.full_message }
-      
     end
   end
 
   def dislike
-    begin
-      @current_post = Post.find(params[:id])
-    rescue 
-      render json: { err: "post not found" }
-      return
+    @current_post = Post.find(params[:id])
+    if !@current_post.present? 
+      render template: 'post/post_not_found'
     end
 
     if @current_user.id != @current_post.user.id 
@@ -153,14 +154,10 @@ class PostController < ApplicationController
   end
 
   def archive
-
-    begin
-      fetched_post = @current_user.posts.find(params[:id])
-    rescue
-      render json: { err: "Post is not found"}
-      return
+    fetched_post = @current_user.posts.find(params[:id])
+    if !fetched_post.present?
+        render json: { err: "Post is not found"}
     end
-    
     fetched_post.archived = true
     if !fetched_post.save
         render json: { err: fetched_post.errors.full_message }

@@ -11,7 +11,9 @@ RSpec.describe "Users", type: :request do
       password_confirmation:"1234567",
       email:"abc@abc.com"
     )
+
   }
+
   before do
     ActionController::Base.allow_forgery_protection = false
     allow_any_instance_of(UserController).to receive(:home).and_return(signed_in_user)
@@ -45,6 +47,37 @@ RSpec.describe "Users", type: :request do
       post '/signup', params: {first_name: "blah", last_name: "blah" , username: "fsfd" , password:"1234567" , password_confirmation:"1234567",email: "Dfgsj@abc.com"}
       expect(response).to redirect_to('/login')
     end
+
+    it "is not valid without first_name " do
+      post '/signup', params: {first_name: "", last_name: "blah" , username: "fsfd" , password:"1234567" , password_confirmation:"1234567",email: "Dfgsj@abc.com"}
+      expect(flash["error"]).to eq(["Missing first_name"])
+    end
+
+    it "is not valid without last_name " do
+      post '/signup', params: {first_name: "blah", last_name: "" , username: "fsfd" , password:"1234567" , password_confirmation:"1234567",email: "Dfgsj@abc.com"}
+      expect(flash["error"]).to eq(["Missing last_name"])
+    end 
+    
+    it "is not valid without username " do
+      post '/signup', params: {first_name: "blah", last_name: "blah" , username: "" , password:"1234567" , password_confirmation:"1234567",email: "Dfgsj@abc.com"}
+      expect(flash["error"]).to eq(["Missing username"])
+    end 
+
+    it "is not valid without password " do
+      post '/signup', params: {first_name: "blah", last_name: "blash" , username: "fsfd" , password:"" , password_confirmation:"1234567",email: "Dfgsj@abc.com"}
+      expect(flash["error"]).to eq(["Missing password"])
+    end 
+    
+    it "is not valid without password_confirmation " do
+      post '/signup', params: {first_name: "blah", last_name: "blash" , username: "fsfd" , password:"1234567" , password_confirmation:"",email: "Dfgsj@abc.com"}
+      expect(flash["error"]).to eq(["Missing password_confirmation"])
+    end 
+
+    it "is not valid without email" do
+      post '/signup', params: {first_name: "blah", last_name: "blash" , username: "fsfd" , password:"1234567" , password_confirmation:"1234567",email: ""}
+      expect(flash["error"]).to eq(["Missing email"])
+    end 
+
   end
 
   describe "User Profile" do
@@ -62,9 +95,10 @@ RSpec.describe "Users", type: :request do
 
     it "same user" do
       login_as
-      get "/user/other"
+      get "/user/test"
       expect(assigns(:is_the_same_user)).to eq(true)
     end
+
   end
 
   describe "profile update" do
@@ -74,4 +108,21 @@ RSpec.describe "Users", type: :request do
       expect(response).to render_template("user/edit")
     end
   end
+
+  describe "follow request " do
+    it "user not exist" do
+      login_as
+      get "/follow/10"
+      parsed_res = JSON.parse(response.body)
+      expect(parsed_res["err"]).to eq(["user not found"])
+    end
+
+    it "sends follow request" do
+      login_as
+      get "/follow/2"
+      parsed_res = JSON.parse(response.body)
+      expect(parsed_res["msg"]).to eq("ok")
+    end
+  end
+
 end

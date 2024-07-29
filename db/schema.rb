@@ -8,9 +8,9 @@
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
 #
-# It's strongly recommended that you check this file into your version control system.
+# It's strongly recommended that you check this file ino your version control system.
 
-ActiveRecord::Schema.define(version: 2024_07_25_085928) do
+ActiveRecord::Schema.define(version: 2024_07_29_110101) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -84,15 +84,6 @@ ActiveRecord::Schema.define(version: 2024_07_25_085928) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
-  create_table "resources", force: :cascade do |t|
-    t.bigint "post_id", null: false
-    t.string "title"
-    t.string "url"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["post_id"], name: "index_resources_on_post_id"
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -113,5 +104,4 @@ ActiveRecord::Schema.define(version: 2024_07_25_085928) do
   add_foreign_key "histories", "posts"
   add_foreign_key "histories", "users"
   add_foreign_key "posts", "users"
-  add_foreign_key "resources", "posts"
 end

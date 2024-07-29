@@ -8,7 +8,7 @@ require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 module LoginHelpers
   def login_as
-    post "/login", params: { username: "other", password: "1234567" } 
+    post "/login", params: { username: "test", password: "1234567" } 
   end
 end
 # Requires supporting ruby files with custom matchers and macros, etc, in

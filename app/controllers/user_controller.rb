@@ -134,13 +134,16 @@ class UserController < ApplicationController
   end
   
   def follow
-    @to_follow_user =  User.find(params[:id])
-    if !@to_follow_user.present?
+    begin
+      @to_follow_user =  User.find(params[:id])
+    rescue
       render json: { err: ["user not found"] }
+      return
     end
+
     @follow_request =  FollowRequest.new(from:@current_user , to:@to_follow_user)
     if @follow_request.save
-      render json: { msg:"ok"}
+      render json: { msg:"ok" }
     else
       render json: { err: @follow_request.errors.full_messages}
     end
@@ -162,20 +165,21 @@ class UserController < ApplicationController
   end
 
   def accept_follow
-    @follow_request =  FollowRequest.find(params[:reqid])
-    if !@follow_request.present?
+    begin
+      @follow_request =  FollowRequest.find(params[:reqid])
+    rescue
       render json: { err: ["Request not found"] }
+      return
     end
+
     @follow_connection = Connection.new(follow_by:@follow_request.from , follow_to:@follow_request.to)
     if @follow_connection.save
       begin
         @follow_request.destroy 
       rescue
         render json: { err: @follow_request.errors.full_messages}
+        return
       end
-      # @follow_request.approved = true
-      # if !@follow_request.save
-      #   render json: { err: @follow_request.errors.full_messages}
       render json: { msg: "ok"}
     else
       render json: { err: @follow_connection.errors.full_messages}
@@ -183,13 +187,17 @@ class UserController < ApplicationController
   end
 
   def reject_follow
-    @follow_request =  FollowRequest.find(params[:reqid])
-    if !@follow_request.present?
+    begin
+      @follow_request =  FollowRequest.find(params[:reqid])
+    rescue
       render json: { err: ["Request not found"] }
+      return
     end
+
     @follow_request.approved = false
     if !@follow_request.save
         render json: { err: @follow_request.errors.full_messages}
+        return
     end
     render json: { msg: "ok"}
   end
@@ -219,16 +227,23 @@ class UserController < ApplicationController
   end
 
   def isFriend 
-    is_follower = Connection.find_by( follow_by: @current_user , follow_to:@show_user)
-    is_following = Connection.find_by( follow_by: @show_user , follow_to:@current_user)
-
-    if is_follower.present? || is_following.present?
+    connection =  Connection.where("(follow_by_id = ? and follow_to_id = ? ) or ( follow_by_id = ? and follow_to_id = ? )", @current_user, @show_user , @show_user , @current_user)
+    if connection.length == 1 
       @is_friend = true
-      @pagy, @records = pagy(@show_user.posts.all.order(created_at: :desc))
-      pp "is there any record #{@records} #{@records.length}"
-      # getShowUserPost
+      @paggy , @records = pagy(@show_user.posts.all.order(created_at: :desc))
     else
       @is_friend = false
     end
+    # is_follower = Connection.find_by( follow_by: @current_user , follow_to:@show_user)
+    # is_following = Connection.find_by( follow_by: @show_user , follow_to:@current_user)
+
+    # if is_follower.present? || is_following.present?
+    #   @is_friend = true
+    #   @pagy, @records = pagy(@show_user.posts.all.order(created_at: :desc))
+    #   pp "is there any record #{@records} #{@records.length}"
+    #   # getShowUserPost
+    # else
+    #   @is_friend = false
+    # end
   end
 end
