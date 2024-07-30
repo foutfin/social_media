@@ -27,5 +27,9 @@ Rails.application.routes.draw do
 
   # Routes for Search Controller
   get '/search' , to: 'search#search'
+
+
+  # mount Test::API => "/"
+  mount Api => "/"
     
 end

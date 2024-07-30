@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  include Devise::JWT::RevocationStrategies::JTIMatcher
+  devise :database_authenticatable, :registerable,:validatable,
+          :jwt_authenticatable , jwt_revocation_strategy: self
   before_save { self.email = self.email.downcase }
   validates :email , presence: true , length: {maximum: 255} , format: {with: /\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i } , uniqueness: true
   validates :username , presence: true , uniqueness: true
@@ -28,5 +31,8 @@ class User < ApplicationRecord
       where("post_id IN (?)",args)
     end
   end
-  has_secure_password
+  def initialize(params={})
+   super(params)
+  end
+  # has_secure_password
 end
