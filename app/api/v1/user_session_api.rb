@@ -17,7 +17,7 @@ module V1
             @user.login
             { :status => 200 , :msg => "Login Successful"}
           rescue
-            { :err => @new_user.errors }
+            { :err => @user.errors }
           end
         end
       end

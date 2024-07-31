@@ -14,7 +14,7 @@ class UserSessionService
       pp "Payload got #{payload}"
     user.save
     else
-      @errors = user.errors.full_messages
+      @errors = ["user not found"]
       raise "user not found"
     end
   end

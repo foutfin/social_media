@@ -30,6 +30,6 @@ Rails.application.routes.draw do
 
 
   # mount Test::API => "/"
-  mount Api => "/"
+  mount Api => "/api"
     
 end

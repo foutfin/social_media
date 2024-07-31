@@ -1,14 +1,12 @@
 class Api < Grape::API
   format :json
-  helpers AuthHelpers
-  helpers do 
-    def unauthorized_error! 
-      error!('Unauthorized',401)
-    end
-  end
+  helpers Helper::AuthHelpers
+  helpers Helper::ErrorHelpers 
 
   mount V1::UserRegistrationApi
   mount V1::UserSessionApi
+  mount V1::PostApi
+  mount V1::UserApi
 
   get :me do
     authenticate
