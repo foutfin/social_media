@@ -7,7 +7,7 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 
-rand(400..500).times do |i|
+(10001..30000).each do |i|
   User.create( first_name: "user-#{i}" , last_name: "user-#{i}", username: "user-#{i}",
                 password:"1234567", bio:"bio-#{i}" , email: "user#{i}@abc.com" )
 end

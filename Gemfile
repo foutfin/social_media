@@ -32,6 +32,7 @@ gem 'grape'
 
 gem  'devise'
 gem  'devise-jwt'
+gem 'sidekiq'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false

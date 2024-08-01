@@ -1,3 +1,4 @@
+module Helper
 module Exceptions
   module PostExceptions
     class BaseException < RuntimeError
@@ -24,4 +25,4 @@ module Exceptions
 
   end
 end
-
+end

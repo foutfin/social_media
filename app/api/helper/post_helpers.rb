@@ -16,7 +16,7 @@ module Helper
 
     def get_all_posts(user)
       user.posts.all
-    rescue
+    rescue ActiveRecord::RecordNotFound
       err_msg = "User Not Found"
       raise Exceptions::PostExceptions::UserNotFound.new([err_msg]) , err_msg
     end
@@ -30,7 +30,7 @@ module Helper
           raise Exceptions::PostExceptions::InvalidPost.new(post.errors.full_messages) , "Invalid Post"
         end
       end
-    rescue 
+    rescue ActiveRecord::RecordNotFound
       err_msg = "Post Not Found"
       raise Exception::PostExceptions::PostNotFound.new([err_msg]) , err_msg
     end

@@ -7,6 +7,7 @@ class Api < Grape::API
   mount V1::UserSessionApi
   mount V1::PostApi
   mount V1::UserApi
+  mount V1::SearchApi
 
   get :me do
     authenticate

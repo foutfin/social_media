@@ -21,9 +21,18 @@ class User < ApplicationRecord
   has_many :followers , class_name: 'Connection' , foreign_key: 'follow_to_id' ,dependent: :destroy
   has_many :following , class_name: 'Connection' , foreign_key: 'follow_by_id' , dependent: :destroy
   has_many :follow_requests , class_name: 'FollowRequest' , foreign_key: 'to_id' do
-    def unApproved
-      where("approved = ? " , nil)
+    def pending
+      where("approved is ?" , nil)
     end
+    
+    def approved
+      where("approved is ?", true)
+    end
+
+    def rejected
+      where("approved is ?", false)
+    end
+
   end
   has_many :followed_posts , source: :posts ,  through: :following
   has_many :history , class_name: "History" , foreign_key: 'user_id' , dependent: :destroy do

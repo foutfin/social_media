@@ -14,7 +14,6 @@ module Helper
 
     def token
       auth = headers['Authorization'].to_s
-      pp "auth header got #{auth}"
       auth.split.last
     end
     
