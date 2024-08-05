@@ -1,11 +1,10 @@
 module Helper
   module UserHelpers
 
-    def get_user_by_username(username)
-      User.find_by(username: username)
-    rescue
-      err_msg = "user not found"
-      raise Exceptions::UserExceptions::UserNotFound.new([err_msg]),err_msg
+    def get_user_by_username(userId)
+      User.find(userId)
+    rescue ActiveRecord::RecordNotFound
+      user_not_found!
     end
 
     def about_me(user)
@@ -16,26 +15,23 @@ module Helper
       if user.first_name == first_name && user.last_name == last_name && user.bio == bio
         return
       end
-      if !first_name.nil? 
-        user.first_name = first_name
-      end
-
-      if !last_name.nil?
-        user.last_name = last_name
-      end
-
-      if !bio.nil?
-        user.bio = bio
-      end
-
+      user.first_name = first_name if !first_name.nil?
+      user.last_name = last_name if !last_name.nil?
+      user.bio = bio if !bio.nil?
       if !user.save 
         raise Exceptions::UserExceptions::InvalidUser.new(user.errors.full_messages), "invalid user"
       end
+    rescue Exceptions::UserExceptions::InvalidUser => e
+      error(e.errors,403)
     end
     
     def generate_follow_request(user,otherUserId)
-      pp "other userId got #{otherUserId} #{otherUserId.class}"
       to_follow_user = User.find(otherUserId)
+      follower = user.followers.find_by(follow_by_id: otherUserId)
+      if !follower.present? 
+        already_friend!
+        return
+      end
       follow_request = FollowRequest.new(from: user , to: to_follow_user)
       if follow_request.save 
         follow_request.id
@@ -43,8 +39,9 @@ module Helper
         raise Exceptions::UserExceptions::InvalidFollowRequest.new(follow_request.errors.full_messages),"invalid follow request"
       end
     rescue ActiveRecord::RecordNotFound
-      err_msg = "User Not Found"
-      raise Exceptions::UserExceptions::UserNotFound.new([err_msg]),err_msg
+      user_not_found!
+    rescue Exceptions::UserExceptions::InvalidFollowRequest => e
+      error(e.errors,403)
     end
 
     def unfollow_user(user,otherUserId)
@@ -56,16 +53,15 @@ module Helper
       end
       connection.destroy
     rescue ActiveRecord::RecordNotFound
-      err_msg = "User Not Found"
-      raise Exceptions::UserExceptions::UserNotFound.new([err_msg]),err_msg
+      user_not_found!
+    rescue Exceptions::UserExceptions::ConnectionNotFound
+      not_have_connection!
     end
     
     def get_all_follow_requests(user,approved)
       case approved
       when "pending"
         user.follow_requests.pending
-      when "approved"
-        user.follow_requests.approved
       when "rejected"
         user.follow_requests.rejected
       else
@@ -73,30 +69,45 @@ module Helper
       end
     end
 
-    def accept_follow_request(user , requestId , otherUserId)
+    def accept_follow_request(requestId)
       follow_request = FollowRequest.find(requestId)
-      connection = Connection.new(follow_by: user , follow_to_id: otherUserId)
-      follow_request.approved = true
+      if follow_request.approved != false
+        connection = Connection.new(follow_by: follow_request.from , follow_to: follow_request.to)
+      else
+        already_rejected!
+      end
+      follow_request.destroy
       if !connection.save
-        raise Exceptions::UserException::InvalidConnection.new(connection.errors.full_messages), "Invalid connection"
+        raise Exceptions::UserExceptions::InvalidConnection.new(connection.errors.full_messages), "Invalid connection"
       end
-      if !follow_request.save
-        raise Exceptions::UserException::InvalidFollowRequest.new(follow_request.errors.full_messages), "Invalid follow request"
-      end
+      # if !follow_request.save
+      #   raise Exceptions::UserExceptions::InvalidFollowRequest.new(follow_request.errors.full_messages), "Invalid follow request"
+      # end
+      UserMailerJob.perform_async(follow_request.from_id , follow_request.to_id)
     rescue ActiveRecord::RecordNotFound
-      err_msg = "follow request not found"
-      raise Exceptions::UserExceptions::FollowRequestNotFound.new([err_msg]) , err_msg
+      follow_request_not_found!
+    rescue Exceptions::UserExceptions::InvalidConnection, Exceptions::UserExceptions::InvalidFollowRequest => e
+      error(e.errors,403)
     end
 
     def reject_follow_request(user , requestId , otherUserId)
       follow_request = FollowRequest.find(requestId)
       follow_request.approved = false
       if !follow_request.save
-        raise Exceptions::UserException::InvalidFollowRequest.new(follow_request.errors.full_messages), "Invalid follow request"
+        raise Exceptions::UserExceptions::InvalidFollowRequest.new(follow_request.errors.full_messages), "Invalid follow request"
       end
     rescue ActiveRecord::RecordNotFound
-      err_msg = "follow request not found"
-      raise Exceptions::UserExceptions::FollowRequestNotFound.new([err_msg]) , err_msg
+      user_not_found!
+    rescue Exceptions::UserExceptions::InvalidFollowRequest => e
+      error(e.errors,403)
+    end
+
+    def get_all_followers(user)
+      user.followers
+    end
+
+    def get_all_following(user)
+      user.following
     end
 
   end

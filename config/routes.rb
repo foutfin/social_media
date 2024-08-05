@@ -1,3 +1,5 @@
+require 'sidekiq/web'
+
 Rails.application.routes.draw do
   # Routes for Post Controller
   resources :post
@@ -31,5 +33,8 @@ Rails.application.routes.draw do
 
   # mount Test::API => "/"
   mount Api => "/api"
+
+  #Sidekiq ui
+  mount Sidekiq::Web => '/sidekiq'
     
 end

@@ -18,7 +18,14 @@ module SocialMedia
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.active_job.queue_adapter = :sidekiq
     config.autoload_paths += %W(#{config.root}/app/api)
     config.autoload_paths += %W(#{config.root}/app/services)
+    
+    #Session Middleware
+    config.session_store :cookie_store, key: '_interslice_session'
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use config.session_store, config.session_options
+
   end
 end

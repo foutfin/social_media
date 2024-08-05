@@ -2,6 +2,7 @@ module V1
   class PostApi < Grape::API
     helpers Helper::PostHelpers
     helpers Helper::AuthHelpers
+    helpers Helper::ResponseHelpers
 
     namespace :post do
       
@@ -15,61 +16,49 @@ module V1
         optional :media , type: File
         at_least_one_of :media, :body
       end
-      
       post do
-        begin
-          create_new_post(@current_user,params[:caption],
+        post_id = create_new_post(@current_user,params[:caption],
                             params[:body] ,params[:media])
-          { :status => 200 , :msg => "ok"}
-        rescue => e
-          { :status => 401 , :msg => e.errors} 
-        end
+        { :status => 200 , :post_id => post_id }
       end
 
       get  do
-        get_all_posts @current_user
+        posts = get_all_posts @current_user
+        generate_response(posts,Entities::Post)
       end
       
       params do
         requires :post_id , type: Integer
-        requires :action , type: String , values:['archive']
       end
-          
-      put  do
-        begin
-          archive_post @current_user , params[:post_id]
-          { :status => 200 , :msg => "ok"}
-        rescue => e
-          { :status => 401 , :msg => e.errors} 
-        end
+      put "archive" do
+        archive_post @current_user , params[:post_id]
+        { :status => 200 , :msg => "ok"}
       end
 
       namespace  do
         before do
-          check_connection params[:post_id].to_i
-        end
-
-        get "/:post_id" do
-          {:status => 200 , :res => @post}
+          check_connection params[:post_id]
         end
 
         namespace :action do
+
           params do
             requires :post_id , type: Integer
             requires :action , type: String , values:['like' , 'dislike']
           end
-          
-          put do
-            postId = params[:post_id]
-            case params[:action]
-            when "like"
-              like_post @current_user,postId
-            when "dislike"
-              dislike_post @current_user,postId
-            end
+          put  do
+            pp "userId got #{params[:post_id]}"
+            handle_action @current_user, params[:action] , params[:post_id]
+            { :status => 200 , :msg => "ok"}
           end
 
         end
+
+        get "/:post_id" do
+          generate_response(@post,Entities::Post)
+        end
+
+        
 
       end
 

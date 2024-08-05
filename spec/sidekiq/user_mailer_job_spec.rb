@@ -1,4 +1,4 @@
 require 'rails_helper'
-RSpec.describe FollowJob, type: :job do
+RSpec.describe UserMailerJob, type: :job do
   pending "add some examples to (or delete) #{__FILE__}"
 end

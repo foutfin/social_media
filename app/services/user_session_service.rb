@@ -10,8 +10,7 @@ class UserSessionService
   def login
     user = User.find_by(username: @username )
     if user.present?
-      @token , payload = Warden::JWTAuth::UserEncoder.new.call(user,:user ,nil)
-      pp "Payload got #{payload}"
+      @token , _ = Warden::JWTAuth::UserEncoder.new.call(user,:user ,nil)
     user.save
     else
       @errors = ["user not found"]

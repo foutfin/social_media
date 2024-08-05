@@ -10,6 +10,36 @@ module LoginHelpers
   def login_as
     post "/login", params: { username: "test", password: "1234567" } 
   end
+
+  def jwt_login(user)
+      post "/api/user/login" , params: user
+      response.header["Authorization"]
+  end
+
+  def get_request_with_auth(user, endpoint)
+    jwt_token = jwt_login(user)
+    get endpoint , headers: { "Authorization": "Bearer #{jwt_token}" }
+    JSON.parse(response.body)
+  end
+
+  def delete_request_with_auth(user, endpoint)
+    jwt_token = jwt_login(user)
+    delete endpoint , headers: { "Authorization": "Bearer #{jwt_token}" }
+    JSON.parse(response.body)
+  end
+
+  def put_request_with_auth(user, endpoint ,payload)
+    jwt_token = jwt_login(user)
+    put endpoint , params: payload, headers: { "Authorization": "Bearer #{jwt_token}" }
+    JSON.parse(response.body)
+  end
+
+  def post_request_with_auth(user, endpoint ,payload)
+    jwt_token = jwt_login(user)
+    post endpoint , params: payload, headers: { "Authorization": "Bearer #{jwt_token}" }
+    JSON.parse(response.body)
+  end
+
 end
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are

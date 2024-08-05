@@ -9,24 +9,31 @@ module V1
       end
 
       get :me do
-        about_me @current_user
+        me = about_me @current_user
+        generate_response(me,Entities::User)
       end
 
       params do
-        optional :status , type: String , values: ["pending" , "rejected" , "approved"]
+        optional :status , type: String , values: ["pending" , "rejected" ]
       end
       get "/followrequests" do
         follow_requests = get_all_follow_requests @current_user , params[:status] 
-        { :status => 200 , :msg=> "ok" , :res => follow_requests }
+        { :status => 200  , :res => follow_requests }
       end
 
-      get "/:username" do
-        user = get_user_by_username params[:username]
-        begin
-          { :status => 200 , :res => user }
-        rescue => e
-          { :status => 403 , :err => e.errors} 
-        end
+      get :followers do
+        followers = get_all_followers @current_user
+        { :status => 200  , :res => followers }
+      end
+
+      get :following do
+        following = get_all_following @current_user
+        { :status => 200  , :res => following }
+      end
+
+      get "/:userId" do
+        user = get_user_by_username params[:userId]
+        generate_response(user,Entities::UnauthenticatedUser)
       end
 
       params do
@@ -44,13 +51,8 @@ module V1
         requires :user_id , type: Integer
       end
       post "/follow" do
-        begin
-          request_id = generate_follow_request @current_user, params[:user_id]
-          { :status => 200 , :msg => "ok" , :res => request_id } 
-        rescue => e
-          pp "Error #{e}"
-          { :status => 400 , :err => e.errors}
-        end
+        request_id = generate_follow_request @current_user, params[:user_id]
+        { :status => 200  , :res => { :request_id => request_id } } 
       end
 
       params do
@@ -61,16 +63,18 @@ module V1
       end
       
       namespace :followrequest do
+
         params do
           requires :request_id , type: Integer
-          requires :user_id , type: Integer
           requires :accept , type: Boolean
         end
         post do 
-          if accept 
-            accept_follow_request @current_user , params[:request_id] , params[:user_id] 
+          if params[:accept] 
+            accept_follow_request  params[:request_id] 
+            { :status => 200 , :msg => "ok" }
           else
-            reject_follow_request @current_user , params[:request_id] , params[:user_id]
+            reject_follow_request params[:request_id] 
+            { :status => 200 , :msg => "ok" }
           end
         end
 

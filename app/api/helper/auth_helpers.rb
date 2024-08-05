@@ -18,6 +18,10 @@ module Helper
     end
     
     def check_connection(postId)
+      if postId.nil?
+        error(["postId is missing"],400)
+        return
+      end
       @post = Post.find(postId)
       if @post.user_id == @current_user.id
         return 

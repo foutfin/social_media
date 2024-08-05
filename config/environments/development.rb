@@ -38,6 +38,16 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:              "smtp-mail.outlook.com",
+    port:                 587,
+    user_name:            "mithunew123@outlook.com",
+    password:             Rails.application.credentials.mail_password,
+    authentication:       "OAuth2/Modern Auth",
+    enable_starttls_auto: true
+  }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

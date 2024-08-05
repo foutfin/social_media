@@ -7,18 +7,21 @@ module Helper
         err_msg = "Media not able to upload"
         raise Exceptions::PostExceptions::MediaNotAbleToUpload.new([err_msg]) , err_msg
       end
-      if !post.save
+      if post.save
+        post.id
+      else
         raise  Exceptions::PostExceptions::InvalidPost.new(post.errors.full_messages) , "Invalid Post"
       end
     rescue Seahorse::Client::NetworkingError 
       raise Exceptions::PostExceptions::S3Unavailable.new(["network error"]) , "not able to connect to s3 bucket"
+    rescue Exceptions::PostExceptions::InvalidPost , Exceptions::PostExceptions::MediaNotAbleToUpload => e
+      error(e.errors,403)
     end
 
     def get_all_posts(user)
       user.posts.all
     rescue ActiveRecord::RecordNotFound
-      err_msg = "User Not Found"
-      raise Exceptions::PostExceptions::UserNotFound.new([err_msg]) , err_msg
+      user_not_found!
     end
 
     def edit_post(user,postId,caption,body)
@@ -31,10 +34,12 @@ module Helper
         end
       end
     rescue ActiveRecord::RecordNotFound
-      err_msg = "Post Not Found"
-      raise Exception::PostExceptions::PostNotFound.new([err_msg]) , err_msg
+      post_not_found!
+    rescue Exceptions::PostExceptions::InvalidPost => e
+      error(e.errors,403)
     end
-
+    
+    #Todo
     def delete_post(user,postId)
       user.posts.destroy(postId)
     rescue
@@ -48,9 +53,10 @@ module Helper
       if !post.save
         raise Exceptions::PostExceptions::InvalidPost.new(post.errors.full_messages) , "Invalid Post"
       end
-    rescue
-      err_msg = "Post Not Found"
-      raise Exception::PostExceptions::PostNotFound.new([err_msg]) , err_msg
+    rescue ActiveRecord::RecordNotFound
+      post_not_found!
+    rescue Exceptions::PostExceptions::InvalidPost => e
+      error(e.errors,403)
     end
 
     def like_post(user,postId)
@@ -65,9 +71,10 @@ module Helper
       if !history.save && !post.save
         raise Exceptions::PostExceptions::InvalidPost.new(post.errors.full_messages) , "Invalid Post"
       end
-    rescue
-      err_msg = "Post Not Found"
-      raise Exception::PostExceptions::PostNotFound.new([err_msg]) , err_msg
+    rescue ActiveRecord::RecordNotFound
+      post_not_found!
+    rescue Exception::PostExceptions::PostAlreadyLiked,Exceptions::PostExceptions::InvalidPost => e
+      error(e.errors,403)
     end
 
     def dislike_post(user,postId)
@@ -82,9 +89,19 @@ module Helper
       if !history.save && !post.save
         raise Exceptions::PostExceptions::InvalidPost.new(post.errors.full_messages) , "Invalid Post"
       end
-    rescue
-      err_msg = "Post Not Found"
-      raise Exception::PostExceptions::PostNotFound.new([err_msg]) , err_msg
+    rescue ActiveRecord::RecordNotFound
+      post_not_found!
+    rescue Exception::PostExceptions::PostAlreadyLiked,Exceptions::PostExceptions::InvalidPost => e
+      error(e.errors,403)
+    end
+
+    def handle_action(user,action,postId)
+      case action
+      when "like"
+          like_post @current_user,postId
+      when "dislike"
+          dislike_post @current_user,postId
+      end
     end
     
   end
