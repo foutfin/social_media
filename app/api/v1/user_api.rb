@@ -2,15 +2,38 @@ module V1
   class UserApi < Grape::API
     helpers Helper::UserHelpers
     helpers Helper::AuthHelpers
+    helpers Helper::CacheHelpers
+    helpers Helper::ResponseHelpers
+    helpers Helper::SpreadsheetHelpers
 
     namespace :user do
       before do
           authenticate
       end
+      
+      delete do 
+        delete_user @current_user
+        { :status => 200 , :msg => "ok"}
+      end
+
+      get :data do
+        ReportGenerationJob.perform_async @current_user.id
+       # posts_sheet @current_user 
+       { :status => 200 , :msg => "ok"}
+      end
 
       get :me do
         me = about_me @current_user
         generate_response(me,Entities::User)
+      end
+      
+      params do
+        optional :limit , type: Integer
+        optional :page , type: Integer
+      end
+      get :home do
+        home = home_feed @current_user , params[:page], params[:limit]
+        generate_response_with_page home , Entities::Post
       end
 
       params do
@@ -18,22 +41,23 @@ module V1
       end
       get "/followrequests" do
         follow_requests = get_all_follow_requests @current_user , params[:status] 
-        { :status => 200  , :res => follow_requests }
+        generate_response(follow_requests,Entities::FollowRequest)
+        # { :status => 200  , :res => follow_requests }
       end
 
       get :followers do
         followers = get_all_followers @current_user
-        { :status => 200  , :res => followers }
+        generate_response(followers,Entities::Follower)
       end
 
       get :following do
         following = get_all_following @current_user
-        { :status => 200  , :res => following }
+        generate_response(following,Entities::Following)
       end
 
       get "/:userId" do
-        user = get_user_by_username params[:userId]
-        generate_response(user,Entities::UnauthenticatedUser)
+        user = get_user_by_username @current_user , params[:userId]
+        generate_response_user(user,Entities::UnauthenticatedUser)
       end
 
       params do
@@ -60,6 +84,7 @@ module V1
       end
       post "/unfollow" do
         unfollow_user @current_user, params[:user_id] 
+        { :status => 200  , :msg => "ok" } 
       end
       
       namespace :followrequest do
@@ -70,10 +95,10 @@ module V1
         end
         post do 
           if params[:accept] 
-            accept_follow_request  params[:request_id] 
+            accept_follow_request @current_user, params[:request_id] 
             { :status => 200 , :msg => "ok" }
           else
-            reject_follow_request params[:request_id] 
+            reject_follow_request @current_user ,params[:request_id] 
             { :status => 200 , :msg => "ok" }
           end
         end

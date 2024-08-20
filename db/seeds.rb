@@ -7,7 +7,7 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 
-(90001..100000).each do |i|
+(97001..102000).each do |i|
   pp "User-#{i}"
   User.create( first_name: "user-#{i}" , last_name: "user-#{i}", username: "user-#{i}",
                 password:"1234567", bio:"bio-#{i}" , email: "user#{i}@abc.com" )

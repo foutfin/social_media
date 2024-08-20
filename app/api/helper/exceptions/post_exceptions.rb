@@ -23,6 +23,9 @@ module Exceptions
     class UserNotFound < BaseException
     end
 
+    class PostAlreadyLiked < BaseException
+    end
+
   end
 end
 end

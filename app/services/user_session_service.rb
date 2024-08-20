@@ -10,15 +10,19 @@ class UserSessionService
   def login
     user = User.find_by(username: @username )
     if user.present?
-      @token , _ = Warden::JWTAuth::UserEncoder.new.call(user,:user ,nil)
-    user.save
+      if user.valid_password?(@password)
+        @token , _ = Warden::JWTAuth::UserEncoder.new.call(user,:user ,nil)
+        user.save
+        Rails.cache.write(user.jti,user)
+      else
+        @errors = ["password does not match"]
+        raise "password does not match"
+      end
+      
     else
       @errors = ["user not found"]
       raise "user not found"
     end
-  end
-
-  def logout
   end
 
 end

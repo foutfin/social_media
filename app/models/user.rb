@@ -1,5 +1,7 @@
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
+  include PgSearch::Model
+
   devise :database_authenticatable, :registerable,:validatable,
           :jwt_authenticatable , jwt_revocation_strategy: self
   before_save { self.email = self.email.downcase }
@@ -17,7 +19,14 @@ class User < ApplicationRecord
       where("archived = ?", false).order(created_at: :desc)
     end
   end
-  has_one_attached :avatar
+  has_one_attached :avatar 
+  validates :avatar, content_type: ['image/png' ,'image/jpg', 'image/jpeg', 'image/avif','image/heif'] , size: { less_than: 100.megabytes }
+
+  pg_search_scope :search_user ,
+            against: %i[first_name last_name username],
+            using: { tsearch: { dictionary: 'english' } }
+  
+  has_one_attached :report
   has_many :followers , class_name: 'Connection' , foreign_key: 'follow_to_id' ,dependent: :destroy
   has_many :following , class_name: 'Connection' , foreign_key: 'follow_by_id' , dependent: :destroy
   has_many :follow_requests , class_name: 'FollowRequest' , foreign_key: 'to_id' do

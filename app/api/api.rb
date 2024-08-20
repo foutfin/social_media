@@ -13,4 +13,8 @@ class Api < Grape::API
     authenticate
     {:msg => @current_user.username}
   end
+
+  get :ping do
+    TestJob.perform_async
+  end
 end

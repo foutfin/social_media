@@ -10,5 +10,12 @@ module Entities
     expose :bio
     expose :created_at
     expose :updated_at
+    expose :avatar do |user|
+      if user.avatar.attached?
+        user.avatar.url
+      else
+        nil
+      end
+    end
   end
 end

@@ -29,6 +29,10 @@ module Exceptions
 
     class FollowRequestNotFound < BaseException
     end
+    class RejectedFollowRequest < BaseException
+    end
+    class AlreadySentRequest < BaseException
+    end
     
   end
 end

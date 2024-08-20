@@ -9,15 +9,18 @@ module V1
           requires :username , type: String 
           requires :password , type: String
           optional :bio , type: String
+          optional :avatar , type:File
         end
 
         post do
-          @new_user = UserRegistrationService.new(params[:first_name],params[:last_name],params[:email],params[:username],params[:bio],params[:password])
+          @new_user = UserRegistrationService.new(params[:first_name],params[:last_name],params[:email],params[:username],params[:bio],
+                        params[:password],params[:avatar])
+          
           begin
-            @new_user.register
-            { :status => 200 , :msg => "User Created Successfully"}
+            user_id = @new_user.register
+            { :status => 200 , user_id: user_id, :msg => "User Created Successfully"}
           rescue 
-            { :err => @new_user.errors }
+            error!(@new_user.errors,403)
           end
         end
 

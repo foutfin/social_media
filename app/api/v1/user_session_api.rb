@@ -1,5 +1,8 @@
 module V1
   class UserSessionApi < Grape::API
+    helpers Helper::AuthHelpers
+    helpers Helper::CacheHelpers
+
     namespace :user do
       namespace :login do
         params do 
@@ -17,7 +20,8 @@ module V1
             @user.login
             { :status => 200 , :msg => "Login Successful"}
           rescue
-            { :err => @user.errors }
+            error(@user.errors,404)
+            
           end
         end
       end
@@ -28,13 +32,8 @@ module V1
         end
 
         delete do
-          uuid = SecureRandom.uuid
-          @current_user.jti = uuid 
-          if @current_user.save
-            { :status => 200 , :msg => "Logged out Successful"}
-          else
-            unauthorized_error! 
-          end
+          logout
+          { :status => 200 , :msg => "Logged out Successful"} 
         end
       end
 

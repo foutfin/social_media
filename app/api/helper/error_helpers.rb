@@ -35,6 +35,14 @@ module Helper
       error(["already rejected"],403)
     end
 
+    def bad_request!
+      error(["request not found"],403)
+    end
+
+    def invalid_page!
+      error(["invalid page"],403)
+    end
+
   end
 end
  

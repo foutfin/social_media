@@ -19,6 +19,13 @@ gem 'turbolinks', '~> 5'
 gem 'jbuilder', '~> 2.7'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
+gem 'rack-cors'
+
+gem "pg_search"
+
+ gem 'redis'
+    gem 'redis-store'
+    gem 'redis-rails'
 # Use Active Model has_secure_password
 gem 'bcrypt', '~> 3.1.7'
 # gem 'bootstrap'
@@ -29,6 +36,7 @@ gem 'active_storage_validations'
 gem 'rails-controller-testing'
 gem 'pagy'
 gem 'grape'
+gem 'spreadsheet'
 
 gem  'devise'
 gem  'devise-jwt'

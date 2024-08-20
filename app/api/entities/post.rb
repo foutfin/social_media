@@ -4,6 +4,17 @@ module Entities
       expose :url do |media , options|
         media.url
       end
+      expose :type do |media|
+        media.content_type
+      end
+  end
+
+  class Creator < Grape::Entity
+    expose :id 
+    expose :username
+    expose :avatar do |user|
+      user.avatar.url
+    end
   end
   
   class Post < Grape::Entity
@@ -15,6 +26,7 @@ module Entities
     expose :dislikes
     expose :created_at
     expose :updated_at
+    expose :user , using: Creator
   end
 
 end

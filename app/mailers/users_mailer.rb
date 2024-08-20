@@ -10,4 +10,5 @@ class UsersMailer < ActionMailer::Base
       format.html
     end
   end
+
 end

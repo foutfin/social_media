@@ -1,0 +1,9 @@
+:concurrency: 5
+production:
+  :concurrency: 10
+:queues:
+  - [follow,2]
+  - [new_post, 2]
+  - [unfollow , 2]
+  - [report , 2]
+  - [retry_queue, 1]

@@ -34,17 +34,19 @@ Rails.application.configure do
   config.active_storage.service = :amazon
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.perform_caching = false
-
+  config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              "smtp-mail.outlook.com",
+    address:               'smtp.gmail.com',
     port:                 587,
-    user_name:            "mithunew123@outlook.com",
-    password:             Rails.application.credentials.mail_password,
-    authentication:       "OAuth2/Modern Auth",
+    domain:               'mail.google.com',
+    user_name:            "amankr1469@gmail.com",
+    password:             "",
+    # password:             Rails.application.credentials.mail_password,
+    authentication:       "plain",
     enable_starttls_auto: true
   }
 
@@ -82,7 +84,8 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.hosts << "www.example.com"
-
+  config.cache_store = :redis_store , { expires_in: 90.minutes }
+  config.active_record.cache_versioning = false
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 end

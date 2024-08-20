@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_07_30_080935) do
+ActiveRecord::Schema.define(version: 2024_08_12_055623) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_trgm"
   enable_extension "plpgsql"
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -94,7 +95,9 @@ ActiveRecord::Schema.define(version: 2024_07_30_080935) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "jti", null: false
     t.string "encrypted_password", default: "", null: false
+    t.index ["first_name", "last_name", "username"], name: "index_users_on_first_name_and_last_name_and_username", opclass: :gin_trgm_ops, using: :gin
     t.index ["jti"], name: "index_users_on_jti", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
